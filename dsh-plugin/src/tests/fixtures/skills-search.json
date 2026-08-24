@@ -1,0 +1,48 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "total": 2633,
+    "skills": [
+      {
+        "category": "office-efficiency",
+        "description": "从图片或 PDF 文档中识别并提取文字内容。",
+        "description_zh": "从图片或 PDF 文档中识别并提取文字内容。",
+        "downloads": 83525,
+        "iconUrl": "https://example.test/icon.png",
+        "installs": 378,
+        "name": "PDF和图片文字提取",
+        "namespace": {
+          "canonicalName": "@user_5f9c21aa/pdf-image-text-extractor",
+          "handle": "user_5f9c21aa",
+          "publicSlug": "pdf-image-text-extractor"
+        },
+        "ownerName": "user_5f9c21aa",
+        "slug": "pdf-image-text-extractor",
+        "stars": 149,
+        "version": "1.0.10",
+        "publisher": {
+          "name": "tencent-ima",
+          "verified": true
+        }
+      },
+      {
+        "category": "office-efficiency",
+        "description": "从 PDF、图片、扫描件中提取文字。",
+        "description_zh": "从 PDF、图片、扫描件中提取文字。",
+        "downloads": 11894,
+        "installs": 0,
+        "name": "PDF识别提取专家",
+        "namespace": {
+          "canonicalName": "@user_779b44c7/pdf-ocr-md",
+          "handle": "user_779b44c7",
+          "publicSlug": "pdf-ocr-md"
+        },
+        "ownerName": "user_779b44c7",
+        "slug": "pdf-ocr-md",
+        "stars": 22,
+        "version": "3.4.0"
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+# 通用
+.DS_Store
+.idea/
+.vscode/
+
+# 环境变量与本地配置
+.env
+.env*.local
+*.local
+
+# 依赖与构建产物
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 示例运行产物
+examples/**/*.zip
+examples/**/out/
