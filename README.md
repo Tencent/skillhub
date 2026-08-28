@@ -65,11 +65,13 @@ python3 docs/examples/python/list_skills.py
 
 [`dsh-plugin/`](dsh-plugin/) 让你在 DeepSeek Harness 对话里搜索 SkillHub 技能、查看详情，并安装到本机 skills 目录。也支持按分类浏览、版本选择、卸载、侧栏「插件广场」，以及对话内搜索 / 直装 DSH 插件。
 
-从 npm 安装（预构建，不需要 `allowBuilds`）：
+从 GitHub 安装：
 
 ```sh
-dsh plugin --profile web add @tencent/skillhub
+dsh plugin --profile web add github:Tencent/skillhub#path:dsh-plugin
 ```
+
+也可以从 npm 安装（预构建）：`dsh plugin --profile web add @tencent/skillhub`。
 
 本地开发：
 

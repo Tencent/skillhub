@@ -65,11 +65,13 @@ Public APIs can be used from the docs as-is. Org-internal Skills require members
 
 [`dsh-plugin/`](dsh-plugin/) lets you search SkillHub skills in a DeepSeek Harness conversation, open details, and install them into the local skills directory. It also supports browsing by category, version selection, uninstall, a sidebar plugin marketplace, and in-chat search / one-click install of DSH plugins.
 
-Install from npm (prebuilt, no `allowBuilds` required):
+Install from GitHub:
 
 ```sh
-dsh plugin --profile web add @tencent/skillhub
+dsh plugin --profile web add github:Tencent/skillhub#path:dsh-plugin
 ```
+
+You can also install from npm (prebuilt): `dsh plugin --profile web add @tencent/skillhub`.
 
 Local development:
 
