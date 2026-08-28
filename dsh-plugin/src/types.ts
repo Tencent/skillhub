@@ -76,6 +76,16 @@ export interface InstalledSkill {
   path: string
 }
 
+/** 已安装技能的本地 Meta 统计(只读,带截断保护)。 */
+export interface SkillMetaStat {
+  files: number
+  totalBytes: number
+  mtimeMs: number
+  truncated: boolean
+}
+
+export type InstalledSkillMeta = InstalledSkill & SkillMetaStat
+
 export interface InstallResult {
   slug: string
   name: string

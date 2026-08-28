@@ -63,7 +63,7 @@ Public APIs can be used from the docs as-is. Org-internal Skills require members
 
 ## DeepSeek Harness plugin
 
-[`dsh-plugin/`](dsh-plugin/) lets you search SkillHub skills in a DeepSeek Harness conversation, open details, and install them into the local skills directory. It also supports browsing by category, version selection, uninstall, and a sidebar plugin marketplace.
+[`dsh-plugin/`](dsh-plugin/) lets you search SkillHub skills in a DeepSeek Harness conversation, open details, and install them into the local skills directory. It also supports browsing by category, version selection, uninstall, a sidebar plugin marketplace, and in-chat search / one-click install of DSH plugins.
 
 Install from npm (prebuilt, no `allowBuilds` required):
 

@@ -2,12 +2,28 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { clamp, fetchSkillCard, parseSlug, searchSkills } from './api.js'
 import { parseCategory } from './categories.js'
 import { assignConfig, publicConfig, sanitizePatch, sanitizeSortBy, writeOverlay } from './config-store.js'
+import { BOOT_ID, progress, publicInstallStatus } from './dsh-cli.js'
 import { fetchBytes } from './http.js'
 import { installSkill, installedSlugs, listInstalled, uninstallSkill } from './install.js'
-import { createInstallPrompt, listPluginCategories, listPlugins } from './plugin-market.js'
+import { listInstalledPlugins, readInstalledPluginReadme, removeInstalledPlugin } from './installed-plugins.js'
+import { loaderHost, setLivePluginDisabled } from './live-plugin.js'
+import { renderMarkdown } from './markdown.js'
+import {
+  fetchInstallPlan,
+  installMarketPlugin,
+  isPluginInstallBusy,
+  listPluginCategories,
+  listPlugins,
+  parsePluginRef,
+  resolveInstallSource,
+  withPluginInstallLock,
+} from './plugin-market.js'
+import { scheduleRestart, servingPort, trustedRestartRequest } from './restart.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
 import type { PluginConfig, SkillCard } from './types.js'
+
+let restarting = false
 
 export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: PluginConfig): Promise<void> {
   try {
@@ -72,6 +88,33 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       const items = await listPluginCategories(cfg)
       return sendJson(res, 200, { ok: true, items })
     }
+    if (method === 'installedPlugins') {
+      const result = await listInstalledPlugins()
+      return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginReadme') {
+      const pkg = String(body.pkg || url.searchParams.get('pkg') || '').trim()
+      if (!pkg) return sendJson(res, 400, { ok: false, error: '缺少 pkg' })
+      const result = await readInstalledPluginReadme(pkg)
+      return sendJson(res, 200, { ok: true, ...result, html: renderMarkdown(result.readme) })
+    }
+    if (method === 'pluginUninstall') {
+      const pkg = String(body.pkg || url.searchParams.get('pkg') || '').trim()
+      if (!pkg) return sendJson(res, 400, { ok: false, error: '缺少 pkg' })
+      const result = await withPluginInstallLock(async () => {
+        // Drop the live loader fiber first so client-modules stops serving
+        // /plugins/<pkg>/client.js before dsh plugin remove deletes the files.
+        const live = await setLivePluginDisabled(pkg, true, loaderHost())
+        try {
+          const removed = await removeInstalledPlugin(pkg)
+          return { ...removed, restart: true }
+        } catch (err) {
+          if (live) await setLivePluginDisabled(pkg, false, loaderHost()).catch(() => false)
+          throw err
+        }
+      })
+      return sendJson(res, 200, { ok: true, ...result })
+    }
     if (method === 'plugins') {
       const result = await listPlugins(cfg, {
         q: body.q ?? body.query ?? url.searchParams.get('q'),
@@ -83,19 +126,45 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       })
       return sendJson(res, 200, { ok: true, ...result })
     }
-    if (method === 'pluginInstallPrompt') {
-      const prompt = createInstallPrompt(
+    if (method === 'pluginInstallPlan') {
+      const ref = parsePluginRef(body.owner ?? url.searchParams.get('owner'), body.name ?? url.searchParams.get('name'))
+      const plan = await fetchInstallPlan(cfg, ref.owner, ref.name)
+      const source = resolveInstallSource(plan, ref)
+      const plugin = (plan && typeof plan === 'object' ? (plan as { plugin?: { repositoryUrl?: unknown } }).plugin : undefined) || {}
+      return sendJson(res, 200, { ok: true, source, repositoryUrl: String(plugin.repositoryUrl || '') })
+    }
+    if (method === 'pluginInstall') {
+      const result = await withPluginInstallLock(() => installMarketPlugin(
         {
           owner: body.owner ?? url.searchParams.get('owner'),
           name: body.name ?? url.searchParams.get('name'),
           fullName: body.fullName ?? url.searchParams.get('fullName'),
         },
-        {
-          locale: body.locale ?? url.searchParams.get('locale'),
-          apiBase: cfg.apiBase,
-        },
-      )
-      return sendJson(res, 200, { ok: true, prompt, apiBase: cfg.apiBase.replace(/\/$/, ''), webBase: cfg.webBase.replace(/\/$/, '') })
+        cfg,
+      ))
+      return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginInstallStatus') {
+      return sendJson(res, 200, {
+        ok: true,
+        ...publicInstallStatus(),
+        busy: isPluginInstallBusy() || progress.active,
+        restart: true,
+        boot: BOOT_ID,
+      })
+    }
+    if (method === 'pluginRestart') {
+      if (!trustedRestartRequest(req)) return sendJson(res, 403, { ok: false, error: 'restart is limited to same-origin requests' })
+      if (isPluginInstallBusy() || progress.active) return sendJson(res, 409, { ok: false, error: 'cannot restart while a plugin operation is running' })
+      if (restarting) return sendJson(res, 409, { ok: false, error: 'restart already scheduled' })
+      restarting = true
+      try {
+        const result = scheduleRestart(servingPort(req))
+        return sendJson(res, 202, { ok: true, pid: result.pid, helperPid: result.helperPid, via: result.via })
+      } catch (err) {
+        restarting = false
+        throw err
+      }
     }
     if (method === 'detail') {
       const slug = parseSlug(String(body.slug || url.searchParams.get('slug') || ''))

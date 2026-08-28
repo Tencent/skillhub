@@ -47,7 +47,7 @@ test('fetchLatestRelease maps GitHub payload', async () => {
 test('getUpdateStatus marks github install up to date', async () => {
   const status = await getUpdateStatus({ timeoutMs: 1000, userAgent: 't' }, {
     fetchJson: async <T>() => ({ tag_name: 'v0.1.0' }) as T,
-    runCommand: async () => '',
+    runDshPlugin: async () => '',
     readPackageJson: () => ({ version: '0.1.0' }),
     readProfilePackage: () => ({ dependencies: { skillhub: 'github:Tencent/skillhub#v0.1.0' } }),
     profileDir: () => '/tmp/profile-web',
@@ -60,7 +60,7 @@ test('getUpdateStatus marks github install up to date', async () => {
 test('getUpdateStatus allows updating from older github install', async () => {
   const status = await getUpdateStatus({ timeoutMs: 1000, userAgent: 't' }, {
     fetchJson: async <T>() => ({ tag_name: 'v0.2.0' }) as T,
-    runCommand: async () => '',
+    runDshPlugin: async () => '',
     readPackageJson: () => ({ version: '0.1.0' }),
     readProfilePackage: () => ({ dependencies: { skillhub: 'github:Tencent/skillhub#v0.1.0' } }),
     profileDir: () => '/tmp/profile-web',
@@ -73,8 +73,8 @@ test('updateToLatestRelease runs dsh plugin add with release tag', async () => {
   const seen: string[][] = []
   const result = await updateToLatestRelease({ timeoutMs: 1000, userAgent: 't' }, {
     fetchJson: async <T>() => ({ tag_name: 'v0.2.0' }) as T,
-    runCommand: async (_cmd, args) => {
-      seen.push(args)
+    runDshPlugin: async (profile, args) => {
+      seen.push([profile, ...args])
       return 'ok'
     },
     readPackageJson: () => ({ version: seen.length ? '0.2.0' : '0.1.0' }),
@@ -83,13 +83,13 @@ test('updateToLatestRelease runs dsh plugin add with release tag', async () => {
   })
   assert.equal(result.updated, true)
   assert.equal(result.restartedHint, true)
-  assert.deepEqual(seen[0].slice(-2), ['add', `${PLUGIN_GITHUB_SPEC}#v0.2.0`])
+  assert.deepEqual(seen[0], ['web', 'add', `${PLUGIN_GITHUB_SPEC}#v0.2.0`])
 })
 
 test('updateToLatestRelease no-ops when already latest', async () => {
   const result = await updateToLatestRelease({ timeoutMs: 1000, userAgent: 't' }, {
     fetchJson: async <T>() => ({ tag_name: 'v0.1.0' }) as T,
-    runCommand: async () => {
+    runDshPlugin: async () => {
       throw new Error('should not run')
     },
     readPackageJson: () => ({ version: '0.1.0' }),
@@ -103,7 +103,7 @@ test('updateToLatestRelease no-ops when already latest', async () => {
 test('getUpdateStatus warns when profile uses local link', async () => {
   const status = await getUpdateStatus({ timeoutMs: 1000, userAgent: 't' }, {
     fetchJson: async <T>() => ({ tag_name: 'v0.1.0' }) as T,
-    runCommand: async () => '',
+    runDshPlugin: async () => '',
     readPackageJson: () => ({ version: '0.1.0' }),
     readProfilePackage: () => ({ dependencies: { skillhub: 'link:/tmp/skillhub' } }),
     profileDir: () => '/tmp/profile-web',
@@ -113,17 +113,13 @@ test('getUpdateStatus warns when profile uses local link', async () => {
   assert.match(status.message || '', /本地开发链接/)
 })
 
-test('runCommand captures stdout and rejects non-zero exit', async () => {
+test('runCommand is re-exported from the CLI helper', async () => {
   const { runCommand } = await import('../self-update.js')
   const out = await runCommand(process.execPath, ['-e', "process.stdout.write('hello')"], {
     cwd: process.cwd(),
     timeoutMs: 5000,
   })
   assert.equal(out, 'hello')
-  await assert.rejects(
-    () => runCommand(process.execPath, ['-e', 'process.exit(2)'], { cwd: process.cwd(), timeoutMs: 5000 }),
-    /exit 2/,
-  )
 })
 
 test('package helpers read local package.json', async () => {

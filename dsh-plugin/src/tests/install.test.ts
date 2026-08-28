@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { withDefaults } from '../config-store.js'
-import { installSkill, installedSlugs, listInstalled, normalizeZipFiles, parseFrontmatter, parseVersion, safeRelPath, skillDir, uninstallSkill } from '../install.js'
+import { installSkill, installedSlugs, listInstalled, normalizeZipFiles, parseFrontmatter, parseVersion, safeRelPath, skillDir, statSkillDir, uninstallSkill } from '../install.js'
 import { unzipToFiles } from '../unzip.js'
 import { makeDeflatedZip, makeDescriptorZip } from './helpers/zip.js'
 import type { PluginConfig } from '../types.js'
@@ -61,6 +61,20 @@ test('parseFrontmatter accepts CRLF and ignores missing fences', () => {
   const meta = parseFrontmatter('---\r\nname: crlf\r\n---\r\nbody')
   assert.equal(meta.name, 'crlf')
   assert.deepEqual(parseFrontmatter('# no frontmatter\n'), {})
+})
+
+test('parseFrontmatter reads YAML | and > block scalars', () => {
+  const literal = parseFrontmatter(
+    '---\nname: ima-skill\ndescription: |\n  统一的 IMA 技能。\n  支持笔记和知识库。\nhomepage: https://ima.qq.com\n---\n# body\n',
+  )
+  assert.equal(literal.name, 'ima-skill')
+  assert.equal(literal.description, '统一的 IMA 技能。\n支持笔记和知识库。')
+  const folded = parseFrontmatter('---\ndescription: >\n  one line\n  continues here\n\n  next para\n---\n')
+  assert.equal(folded.description, 'one line continues here\nnext para')
+  const emptyBlock = parseFrontmatter('---\nname: x\ndescription: |\nversion: 1\n---\n')
+  assert.equal(emptyBlock.name, 'x')
+  assert.equal(emptyBlock.version, '1')
+  assert.equal(emptyBlock.description, undefined)
 })
 
 test('install requires SKILL.md', async () => {
@@ -173,6 +187,41 @@ test('listInstalled skips files, hidden dirs, and folders without SKILL.md', asy
   assert.equal(listed.length, 1)
   assert.equal(listed[0].slug, 'ok')
   assert.deepEqual(await listInstalled(join(dir, 'missing-root')), [])
+  await rm(dir, { recursive: true, force: true })
+})
+
+test('listInstalled returns local meta stats with files/totalBytes/mtimeMs', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'skillhub-meta-'))
+  await mkdir(join(dir, 'demo'), { recursive: true })
+  await mkdir(join(dir, 'demo', 'refs'), { recursive: true })
+  await writeFile(join(dir, 'demo', 'SKILL.md'), '---\nname: demo\nversion: 1.0.0\n---\n')
+  await writeFile(join(dir, 'demo', 'refs', 'a.md'), 'aaaa')
+  await writeFile(join(dir, 'demo', 'refs', 'b.md'), 'bb')
+  const listed = await listInstalled(dir)
+  assert.equal(listed.length, 1)
+  const it = listed[0]
+  assert.equal(it.slug, 'demo')
+  assert.equal(it.files, 3)
+  assert.equal(it.totalBytes, 4 + 2 + '---\nname: demo\nversion: 1.0.0\n---\n'.length)
+  assert.ok(it.mtimeMs > 0)
+  assert.equal(it.truncated, false)
+  await rm(dir, { recursive: true, force: true })
+})
+
+test('statSkillDir truncates when the file limit is reached', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'skillhub-trunc-'))
+  await mkdir(join(dir, 'deep'), { recursive: true })
+  for (let i = 0; i < 5; i++) await writeFile(join(dir, 'deep', `f${i}.txt`), 'x')
+  const stat = await statSkillDir(dir, 3)
+  assert.equal(stat.files, 3)
+  assert.equal(stat.truncated, true)
+  await rm(dir, { recursive: true, force: true })
+})
+
+test('statSkillDir tolerates broken directories', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'skillhub-broken-'))
+  const stat = await statSkillDir(dir)
+  assert.deepEqual(stat, { files: 0, totalBytes: 0, mtimeMs: 0, truncated: false })
   await rm(dir, { recursive: true, force: true })
 })
 

@@ -1,6 +1,6 @@
 {
   "name": "@tencent/skillhub",
-  "version": "0.2.9",
+  "version": "0.2.16",
   "description": "DeepSeek Harness 插件：在对话中搜索、安装和管理 SkillHub 技能",
   "homepage": "https://github.com/Tencent/skillhub#readme",
   "bugs": {
@@ -44,7 +44,7 @@
     "build": "rm -rf lib && tsc -p tsconfig.json && mkdir -p lib/tests/fixtures && cp src/client.js lib/client.js && cp src/tests/fixtures/* lib/tests/fixtures/",
     "prepare": "npm run build",
     "test": "npm run build && node --test lib/tests/*.test.js",
-    "test:coverage": "npm run build && node --test --experimental-test-coverage --test-coverage-include=lib/api.js --test-coverage-include=lib/categories.js --test-coverage-include=lib/config-store.js --test-coverage-include=lib/http.js --test-coverage-include=lib/install.js --test-coverage-include=lib/plugin-market.js --test-coverage-include=lib/skill-detail.js --test-coverage-include=lib/self-update.js --test-coverage-include=lib/unzip.js --test-coverage-lines=95 --test-coverage-functions=85 --test-coverage-branches=70 lib/tests/*.test.js",
+    "test:coverage": "npm run build && node --test --experimental-test-coverage --test-coverage-include=lib/api.js --test-coverage-include=lib/categories.js --test-coverage-include=lib/config-store.js --test-coverage-include=lib/dsh-cli.js --test-coverage-include=lib/http.js --test-coverage-include=lib/install.js --test-coverage-include=lib/installed-plugins.js --test-coverage-include=lib/live-plugin.js --test-coverage-include=lib/markdown.js --test-coverage-include=lib/ndjson.js --test-coverage-include=lib/plugin-market.js --test-coverage-include=lib/restart.js --test-coverage-include=lib/skill-detail.js --test-coverage-include=lib/self-update.js --test-coverage-include=lib/unzip.js --test-coverage-lines=95 --test-coverage-functions=85 --test-coverage-branches=70 lib/tests/*.test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "pack:check": "bash .github/scripts/check-pack.sh"
   },
@@ -71,7 +71,7 @@
     "@deepseek-ai/cordis": "^4.0.1",
     "@deepseek-ai/dsh-tools": "^0.1.0-rc.6",
     "@deepseek-ai/schemastery": "^3.18.1",
-    "@types/node": "^24.3.0",
-    "typescript": "^5.9.2"
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2"
   }
 }

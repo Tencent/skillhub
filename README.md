@@ -63,7 +63,7 @@ python3 docs/examples/python/list_skills.py
 
 ## DeepSeek Harness 插件
 
-[`dsh-plugin/`](dsh-plugin/) 让你在 DeepSeek Harness 对话里搜索 SkillHub 技能、查看详情，并安装到本机 skills 目录。也支持按分类浏览、版本选择、卸载，以及侧栏「插件广场」。
+[`dsh-plugin/`](dsh-plugin/) 让你在 DeepSeek Harness 对话里搜索 SkillHub 技能、查看详情，并安装到本机 skills 目录。也支持按分类浏览、版本选择、卸载、侧栏「插件广场」，以及对话内搜索 / 直装 DSH 插件。
 
 从 npm 安装（预构建，不需要 `allowBuilds`）：
 
