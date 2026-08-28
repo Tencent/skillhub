@@ -3,7 +3,7 @@
  * SkillHub 公开 API 最小示例：列表 / 详情 / 批量详情
  *
  * 用法：
- *   node examples/node/list-skills.mjs
+ *   node docs/examples/node/list-skills.mjs
  *
  * 环境变量：
  *   SKILLHUB_BASE_URL  接口地址，默认 https://api.skillhub.cn

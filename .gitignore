@@ -17,5 +17,5 @@ __pycache__/
 venv/
 
 # 示例运行产物
-examples/**/*.zip
-examples/**/out/
+docs/examples/**/*.zip
+docs/examples/**/out/

@@ -2,7 +2,7 @@
 # SkillHub 公开 API 快速上手：列表 -> 详情 -> 版本 -> 文件 -> 质量结果
 #
 # 用法：
-#   bash examples/curl/quickstart.sh [slug]
+#   bash docs/examples/curl/quickstart.sh [slug]
 #
 # 环境变量：
 #   SKILLHUB_BASE_URL  接口地址，默认 https://api.skillhub.cn

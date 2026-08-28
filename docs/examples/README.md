@@ -10,16 +10,18 @@
 
 ## 运行
 
+在仓库根目录执行：
+
 ```bash
-bash examples/curl/quickstart.sh
-node examples/node/list-skills.mjs
-python3 examples/python/list_skills.py
+bash docs/examples/curl/quickstart.sh
+node docs/examples/node/list-skills.mjs
+python3 docs/examples/python/list_skills.py
 ```
 
 `quickstart.sh` 可以带一个 slug 参数，换成你关心的 Skill：
 
 ```bash
-bash examples/curl/quickstart.sh find-skill-skillhub
+bash docs/examples/curl/quickstart.sh find-skill-skillhub
 ```
 
 ## 配置
