@@ -14,7 +14,7 @@
 
 SkillHub 聚合全球同步与本土上传的 Skills，并提供安全认证、质量评测、企业发布和组织技能库，让 Agent 能稳定获得可信能力。
 
-以全球优质 Skills 同步、本土创作者共建和国内下载体验优化为基础，持续沉淀面向中国用户的 AI 能力供给网络。目前已收录 **8 万+ Skills**，累计下载 **6000 万+ 次**，**单月下载量超过 2000 万次**，并有 **500+ 商家**入驻。
+以全球优质 Skills 同步、本土创作者共建和国内下载体验优化为基础，持续沉淀面向中国用户的 AI 能力供给网络。目前已收录 **13 万+ Skills**，其中 **2 万+** 为企业发布的 Skills，并有 **500+** 商家完成上架。
 
 | 能力 | 说明 |
 |------|------|
@@ -25,7 +25,17 @@ SkillHub 聚合全球同步与本土上传的 Skills，并提供安全认证、�
 | 企业发布与内部技能库 | 组织账号可对外发布（蓝 V 认证），也可把内部 Prompt、流程和工具调用沉淀为仅团队可见的技能库 |
 | Soul.md 与技能包 | 用 Soul.md 定义 Agent 的表达、角色和协作方式，再叠加精选行业技能包，组合出专属 Agent |
 
-开发者可以在这里分享 Skill，Agent 和各类应用也可以直接查找和使用这些能力。更完整的产品说明见 [skillhub.cn/about](https://skillhub.cn/about)。
+开发者可以在这里分享 Skill，Agent 和各类应用也可以直接查找和使用这些能力。更完整的产品说明见 [skillhub.cn/about](https://skillhub.cn/about)。精选能力见 [skillhub.cn/#featured](https://skillhub.cn/#featured)。
+
+### 产品截图
+
+截图来自官网 Featured 区块。
+
+![DeepSeek Harness Plugin 广场](docs/images/plugin-plaza.jpg)
+
+![网页发布 Skill](docs/images/publish-web.png)
+
+![通过 Agent 发布 Skill](docs/images/publish-agent.png)
 
 ## 仓库结构
 

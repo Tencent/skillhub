@@ -14,7 +14,7 @@ Open-source repo: [github.com/Tencent/skillhub](https://github.com/Tencent/skill
 
 SkillHub aggregates globally synced and locally published Skills, and provides security certification, quality evaluation, enterprise publishing, and organization skill libraries so agents can reliably get trusted capabilities.
 
-It is built on syncing high-quality Skills worldwide, co-creating with local authors, and optimizing download experience in China. The catalog currently includes **80,000+ Skills**, **60 million+** lifetime downloads, **20 million+** downloads in a single month, and **500+** merchants.
+It is built on syncing high-quality Skills worldwide, co-creating with local authors, and optimizing download experience in China. The catalog currently includes **130,000+ Skills**, **20,000+** enterprise-published Skills, and **500+** merchants with listings on the platform.
 
 | Capability | What it means |
 |------------|----------------|
@@ -25,7 +25,17 @@ It is built on syncing high-quality Skills worldwide, co-creating with local aut
 | Enterprise publishing and private libraries | Organizations can publish externally with verified (blue V) identity, or keep internal prompts, workflows, and tool recipes in a team-only skill library |
 | Soul.md and skill packs | Soul.md defines how an agent speaks, acts, and collaborates; curated industry skill packs add reusable expertise on top |
 
-Developers can share Skills here; agents and applications can find and use them. See [skillhub.cn/about](https://skillhub.cn/about) for the full product overview.
+Developers can share Skills here; agents and applications can find and use them. See [skillhub.cn/about](https://skillhub.cn/about) for the full product overview. Featured capabilities: [skillhub.cn/#featured](https://skillhub.cn/#featured).
+
+### Screenshots
+
+Images are from the Featured section on the official site.
+
+![DeepSeek Harness Plugin marketplace](docs/images/plugin-plaza.jpg)
+
+![Publish a Skill on the web](docs/images/publish-web.png)
+
+![Publish a Skill through an Agent](docs/images/publish-agent.png)
 
 ## Repository layout
 
