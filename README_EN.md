@@ -2,7 +2,7 @@
 
 [中文](README.md) | [English](README_EN.md)
 
-An AI Skills community optimized for users in China. This repository publishes two things: **Open API docs and runnable examples** ([`docs/`](docs/)), and a **DeepSeek Harness plugin** ([`dsh-plugin/`](dsh-plugin/)).
+An AI Skills community optimized for users in China. This repository publishes three things: **Open API docs and runnable examples** ([`docs/`](docs/)), a **DeepSeek Harness plugin** ([`dsh-plugin/`](dsh-plugin/)), and **official SkillHub Skills** ([`skills/`](skills/)).
 
 Open-source repo: [github.com/Tencent/skillhub](https://github.com/Tencent/skillhub) · Product site: [skillhub.cn](https://skillhub.cn) · [About SkillHub](https://skillhub.cn/about)
 
@@ -29,6 +29,7 @@ Developers can share Skills here; agents and applications can find and use them.
 |------|------------|
 | [`docs/`](docs/) | Open API documentation, onboarding notes, and runnable examples |
 | [`dsh-plugin/`](dsh-plugin/) | SkillHub plugin for DeepSeek Harness (npm: `@tencent/skillhub`) |
+| [`skills/`](skills/) | Official SkillHub Skills |
 
 ## Open API
 
@@ -83,13 +84,24 @@ Then restart `dsh web` (bind `127.0.0.1`) and hard-refresh the browser. Use the 
 
 Features, configuration, development, and troubleshooting: [dsh-plugin/README.md](dsh-plugin/README.md).
 
+## Official Skills
+
+[`skills/`](skills/) contains Skills maintained by the SkillHub team. Use them directly with an Agent, or install the same Skills from the SkillHub catalog.
+
+| Skill | What it does |
+|-------|----------------|
+| [find-skill-skillhub](skills/find-skill-skillhub/) | Search and recommend Skills on SkillHub by keyword and category |
+| [skillhub-trace-evaluator](skills/skillhub-trace-evaluator/) | Evaluate a Skill package with the TRACE dimensions (Trust / Reliability / Adaptability / Convention / Effectiveness) |
+
+Copy the skill directory into a path your Agent can discover, or search the same name on [skillhub.cn](https://skillhub.cn).
+
 ## Contributing and support
 
 ```bash
 git clone https://github.com/Tencent/skillhub.git
 ```
 
-- Start at [CONTRIBUTING.md](CONTRIBUTING.md): API docs in [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md), plugin in [dsh-plugin/CONTRIBUTING.md](dsh-plugin/CONTRIBUTING.md)
+- Start at [CONTRIBUTING.md](CONTRIBUTING.md): API docs in [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md), plugin in [dsh-plugin/CONTRIBUTING.md](dsh-plugin/CONTRIBUTING.md), official Skills in [`skills/`](skills/)
 - Usage questions, doc errors, or unexpected API/plugin behavior: open a [GitHub Issue](https://github.com/Tencent/skillhub/issues)
 - Security issues: do not file a public issue; follow [SECURITY.md](SECURITY.md)
 

@@ -2,7 +2,7 @@
 
 [中文](README.md) | [English](README_EN.md)
 
-专为中国用户优化的 AI Skills 社区。本仓库开源两部分：**Open API 文档与调用示例**（[`docs/`](docs/)），以及 **DeepSeek Harness 插件**（[`dsh-plugin/`](dsh-plugin/)）。
+专为中国用户优化的 AI Skills 社区。本仓库开源三部分：**Open API 文档与调用示例**（[`docs/`](docs/)）、**DeepSeek Harness 插件**（[`dsh-plugin/`](dsh-plugin/)），以及 **SkillHub 官方 Skills**（[`skills/`](skills/)）。
 
 开源仓库：[github.com/Tencent/skillhub](https://github.com/Tencent/skillhub) · 产品站点：[skillhub.cn](https://skillhub.cn) · [关于 SkillHub](https://skillhub.cn/about)
 
@@ -29,6 +29,7 @@ SkillHub 聚合全球同步与本土上传的 Skills，并提供安全认证、�
 |------|------|
 | [`docs/`](docs/) | Open API 文档、接入说明与可运行示例 |
 | [`dsh-plugin/`](dsh-plugin/) | DeepSeek Harness 的 SkillHub 插件（npm：`@tencent/skillhub`） |
+| [`skills/`](skills/) | SkillHub 官方维护的 Skill |
 
 ## Open API
 
@@ -83,13 +84,24 @@ dsh plugin --profile web add /absolute/path/to/skillhub/dsh-plugin
 
 功能、配置、开发与故障排查见 [dsh-plugin/README.md](dsh-plugin/README.md)。
 
+## 官方 Skills
+
+[`skills/`](skills/) 是 SkillHub 官方维护的 Skill，可直接给 Agent 使用，也和平台上的同名 Skill 对应。
+
+| Skill | 说明 |
+|-------|------|
+| [find-skill-skillhub](skills/find-skill-skillhub/) | 在 SkillHub 上按关键词、分类查找和推荐 Skill |
+| [skillhub-trace-evaluator](skills/skillhub-trace-evaluator/) | 按 TRACE 五维（Trust / Reliability / Adaptability / Convention / Effectiveness）评测 Skill 包质量 |
+
+把对应目录拷到 Agent 可发现的 skills 路径即可使用，也可以在 [skillhub.cn](https://skillhub.cn) 搜索同名 Skill 安装。
+
 ## 贡献与问题反馈
 
 ```bash
 git clone https://github.com/Tencent/skillhub.git
 ```
 
-- 贡献入口见 [CONTRIBUTING.md](CONTRIBUTING.md)：API 文档走 [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)，插件走 [dsh-plugin/CONTRIBUTING.md](dsh-plugin/CONTRIBUTING.md)
+- 贡献入口见 [CONTRIBUTING.md](CONTRIBUTING.md)：API 文档走 [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)，插件走 [dsh-plugin/CONTRIBUTING.md](dsh-plugin/CONTRIBUTING.md)，官方 Skill 改 [`skills/`](skills/)
 - 使用问题、文档错误、接口或插件行为异常：提交 [GitHub Issue](https://github.com/Tencent/skillhub/issues)
 - 安全问题：请勿公开提交 Issue，按 [SECURITY.md](SECURITY.md) 报告
 

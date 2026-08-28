@@ -1,0 +1,106 @@
+{
+  "dimensions": {
+    "trust": {
+      "reason": "示例：故意不合规",
+      "userReason": "用来测校验脚本",
+      "items": {
+        "scan": {
+          "status": "skipped",
+          "reason": "需平台安全扫描，本评测师不评分",
+          "userReason": "安全扫描需平台完成，此处未评分"
+        },
+        "domestic": {
+          "score": 0,
+          "reason": "分数为 0，应失败",
+          "userReason": "非法分数"
+        }
+      }
+    },
+    "reliability": {
+      "reason": "缺 errorHandling 子项",
+      "userReason": "缺项",
+      "items": {
+        "stability": {
+          "score": 3.0,
+          "reason": "ok",
+          "userReason": "ok"
+        },
+        "func": {
+          "status": "skipped",
+          "reason": "非法 skipped",
+          "userReason": "非法"
+        }
+      }
+    },
+    "adaptability": {
+      "reason": "ok",
+      "userReason": "ok",
+      "items": {
+        "boundary": {
+          "score": 4.0,
+          "reason": "ok",
+          "userReason": "ok"
+        },
+        "trigger": {
+          "score": 6.0,
+          "reason": "超过 5.0",
+          "userReason": "非法"
+        }
+      }
+    },
+    "convention": {
+      "reason": "ok",
+      "userReason": "ok",
+      "items": {
+        "progressive": {
+          "score": 4.0,
+          "reason": "ok",
+          "userReason": "ok"
+        },
+        "structure": {
+          "score": 4.0,
+          "reason": "ok",
+          "userReason": "ok"
+        },
+        "docQuality": {
+          "score": 4.0,
+          "reason": "ok",
+          "userReason": "ok"
+        },
+        "antiPatternFaq": {
+          "score": 4.0,
+          "reason": "ok",
+          "userReason": "ok"
+        }
+      }
+    },
+    "effectiveness": {
+      "reason": "ok",
+      "userReason": "ok",
+      "items": {
+        "accuracy": {
+          "score": 4.0,
+          "reason": "ok",
+          "userReason": "ok"
+        },
+        "completeness": {
+          "score": 4.0,
+          "reason": "ok",
+          "userReason": "ok"
+        },
+        "usability": {
+          "score": 4.0,
+          "reason": "ok",
+          "userReason": "ok"
+        },
+        "creativity": {
+          "score": 4.0,
+          "reason": "ok",
+          "userReason": "ok"
+        }
+      }
+    }
+  },
+  "summary": "故意不合规样例",
+  "userSummary": "用于校验脚本应 exit 1"
+}

@@ -1,0 +1,111 @@
+{
+  "dimensions": {
+    "trust": {
+      "reason": "本地化适配良好，中文说明完整；本报告跳过 scan。",
+      "userReason": "中文好用，上手门槛低；安全项未评。",
+      "items": {
+        "scan": {
+          "status": "skipped",
+          "reason": "本评测不做安全扫描，不评分",
+          "userReason": "未做安全扫描，此项跳过"
+        },
+        "domestic": {
+          "score": 4.5,
+          "reason": "SKILL.md 与流程均为中文，依赖服务可直接访问，无明显难访问外部依赖。",
+          "userReason": "中文友好，依赖可直接使用。"
+        }
+      }
+    },
+    "reliability": {
+      "reason": "流程步骤清晰且有失败回退说明，核心能力有命令与校验保障，异常场景有明确禁止项。",
+      "userReason": "整体稳，出错时也知道该怎么改。",
+      "items": {
+        "stability": {
+          "score": 4.0,
+          "reason": "强制校验脚本与分步流程降低胡乱输出风险；探索策略避免一次读爆导致崩溃式幻觉。",
+          "userReason": "流程稳，有检查关卡，不容易乱评。"
+        },
+        "func": {
+          "score": 4.5,
+          "reason": "覆盖定位、探索、五维评分、摘要、校验与交付，声明能力均有对应步骤与参考文档。",
+          "userReason": "该有的评测步骤都齐了。"
+        },
+        "errorHandling": {
+          "score": 4.0,
+          "reason": "拿不到包时明确停止；校验失败须修正后再交付，禁止不合规 JSON。",
+          "userReason": "缺材料或分数不对时会拦住，不硬交。"
+        }
+      }
+    },
+    "adaptability": {
+      "reason": "能力边界与触发描述清楚，适用评测场景明确，输入优先级写清。",
+      "userReason": "知道什么时候用、能评什么。",
+      "items": {
+        "boundary": {
+          "score": 4.5,
+          "reason": "明确只做本地 TRACE 打分与校验，不做安全扫描，边界写在 SKILL 里。",
+          "userReason": "边界清楚，知道评什么、不评什么。"
+        },
+        "trigger": {
+          "score": 4.5,
+          "reason": "description 覆盖 TRACE、质量打分、五维度等中英文触发语，易命中。",
+          "userReason": "说评测或 TRACE 就能唤起。"
+        }
+      }
+    },
+    "convention": {
+      "reason": "主 SKILL 短流程 + references 分维细则，结构清晰；示例与校验脚本齐全，反模式写在禁止项。",
+      "userReason": "文档分层清楚，容易跟着做。",
+      "items": {
+        "progressive": {
+          "score": 5.0,
+          "reason": "核心流程在 SKILL.md，细则按维拆到 references，符合渐进式披露。",
+          "userReason": "先看主流程，需要再看细则。"
+        },
+        "structure": {
+          "score": 5.0,
+          "reason": "SKILL.md、scripts、references、examples 目录职责分明，命名规范。",
+          "userReason": "目录整齐，好找。"
+        },
+        "docQuality": {
+          "score": 4.0,
+          "reason": "有输出 schema、人类可读模板与合法/非法样例；最佳实践体现在强制校验步骤。",
+          "userReason": "有样例和格式说明，够用。"
+        },
+        "antiPatternFaq": {
+          "score": 3.5,
+          "reason": "禁止项列出编造证据、敏感词、非法 skipped 等；未单独成 FAQ 章节。",
+          "userReason": "常见坑写了，FAQ 还可再补。"
+        }
+      }
+    },
+    "effectiveness": {
+      "reason": "评分口径完整，输出可校验，对改进 Skill 包有直接指导价值。",
+      "userReason": "打分有用，能看出哪里该改。",
+      "items": {
+        "accuracy": {
+          "score": 4.0,
+          "reason": "维度与子项命名一致；scan 跳过规则明确，不会误报安全分。",
+          "userReason": "分项清楚，不乱报安全分。"
+        },
+        "completeness": {
+          "score": 4.5,
+          "reason": "五维十四评分子项加 scan 占位齐全，摘要与交付格式完整。",
+          "userReason": "报告该有的块都有。"
+        },
+        "usability": {
+          "score": 4.5,
+          "reason": "一步步可执行；校验脚本零依赖，本地即可跑通。",
+          "userReason": "跟着做就能出合规报告。"
+        },
+        "creativity": {
+          "score": 3.5,
+          "reason": "把评分标准做成可执行流程并带本地校验，增值明确但创新幅度中等。",
+          "userReason": "比干巴巴的评分表更可操作。"
+        }
+      }
+    }
+  },
+  "summary": "该 Skill 以 TRACE 五维框架组织评测流程，结构分层清晰，强制分数校验降低不合规输出风险。中文与本地化说明到位，可靠性依赖流程与示例。主要不足是 anti-pattern 未独立成 FAQ，且不做安全扫描。建议补充更多非法样例说明与常见误评案例。",
+  "userSummary": "整体质量不错：步骤清楚、能拦住乱打分，中文也好用。安全项会跳过，不会在这里打安全分。再补点常见错误说明会更省心。"
+}
