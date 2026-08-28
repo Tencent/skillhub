@@ -2,7 +2,11 @@
 
 [中文](README.md) | [English](README_EN.md)
 
-An AI Skills community optimized for users in China. This repository publishes three things: **Open API docs and runnable examples** ([`docs/`](docs/)), a **DeepSeek Harness plugin** ([`dsh-plugin/`](dsh-plugin/)), and **official SkillHub Skills** ([`skills/`](skills/)).
+An AI Skills community optimized for users in China. This repository publishes three things:
+
+- **Open API docs and runnable examples** ([`docs/`](docs/))
+- **DeepSeek Harness plugin** ([`dsh-plugin/`](dsh-plugin/))
+- **Official SkillHub Skills** ([`skills/`](skills/))
 
 Open-source repo: [github.com/Tencent/skillhub](https://github.com/Tencent/skillhub) · Product site: [skillhub.cn](https://skillhub.cn) · [About SkillHub](https://skillhub.cn/about)
 

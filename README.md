@@ -2,7 +2,11 @@
 
 [中文](README.md) | [English](README_EN.md)
 
-专为中国用户优化的 AI Skills 社区。本仓库开源三部分：**Open API 文档与调用示例**（[`docs/`](docs/)）、**DeepSeek Harness 插件**（[`dsh-plugin/`](dsh-plugin/)），以及 **SkillHub 官方 Skills**（[`skills/`](skills/)）。
+专为中国用户优化的 AI Skills 社区。本仓库开源三部分：
+
+- **Open API 文档与调用示例**（[`docs/`](docs/)）
+- **DeepSeek Harness 插件**（[`dsh-plugin/`](dsh-plugin/)）
+- **SkillHub 官方 Skills**（[`skills/`](skills/)）
 
 开源仓库：[github.com/Tencent/skillhub](https://github.com/Tencent/skillhub) · 产品站点：[skillhub.cn](https://skillhub.cn) · [关于 SkillHub](https://skillhub.cn/about)
 
