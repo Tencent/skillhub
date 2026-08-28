@@ -8,7 +8,7 @@
 - **DeepSeek Harness 插件**（[`dsh-plugin/`](dsh-plugin/)）
 - **SkillHub 官方 Skills**（[`skills/`](skills/)）
 
-开源仓库：[github.com/Tencent/skillhub](https://github.com/Tencent/skillhub) · 产品站点：[skillhub.cn](https://skillhub.cn) · [关于 SkillHub](https://skillhub.cn/about)
+产品站点：[skillhub.cn](https://skillhub.cn)
 
 ## 什么是 SkillHub
 
@@ -29,9 +29,9 @@ SkillHub 聚合全球同步与本土上传的 Skills，并提供安全认证、�
 
 ### 产品截图
 
-截图来自官网 Featured 区块。
-
 ![DeepSeek Harness Plugin 广场](docs/images/plugin-plaza.jpg)
+
+![对话中搜索 Skill](docs/images/skill-search.png)
 
 ![网页发布 Skill](docs/images/publish-web.png)
 

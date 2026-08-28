@@ -8,7 +8,7 @@ An AI Skills community optimized for users in China. This repository publishes t
 - **DeepSeek Harness plugin** ([`dsh-plugin/`](dsh-plugin/))
 - **Official SkillHub Skills** ([`skills/`](skills/))
 
-Open-source repo: [github.com/Tencent/skillhub](https://github.com/Tencent/skillhub) · Product site: [skillhub.cn](https://skillhub.cn) · [About SkillHub](https://skillhub.cn/about)
+Product site: [skillhub.cn](https://skillhub.cn)
 
 ## What is SkillHub
 
@@ -29,9 +29,9 @@ Developers can share Skills here; agents and applications can find and use them.
 
 ### Screenshots
 
-Images are from the Featured section on the official site.
-
 ![DeepSeek Harness Plugin marketplace](docs/images/plugin-plaza.jpg)
+
+![Search Skills in conversation](docs/images/skill-search.png)
 
 ![Publish a Skill on the web](docs/images/publish-web.png)
 
