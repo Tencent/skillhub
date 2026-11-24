@@ -30,7 +30,7 @@ test('renderMarkdown headings lists code tables and inline', () => {
     '| `skillhub_search` | 搜索 |',
     '',
     '```sh',
-    'dsh plugin add @tencent/skillhub',
+    'dsh plugin add skillhub-plugin',
     '```',
     '',
     '**bold** and *em*',
@@ -41,7 +41,7 @@ test('renderMarkdown headings lists code tables and inline', () => {
   assert.match(html, /<ul><li>功能<\/li><li>安装<\/li><\/ul>/)
   assert.match(html, /<th>工具<\/th>/)
   assert.match(html, /<td><code>skillhub_search<\/code><\/td>/)
-  assert.match(html, /<pre><code>dsh plugin add @tencent\/skillhub<\/code><\/pre>/)
+  assert.match(html, /<pre><code>dsh plugin add skillhub-plugin<\/code><\/pre>/)
   assert.match(html, /<strong>bold<\/strong>/)
   assert.match(html, /<em>em<\/em>/)
 })
@@ -93,7 +93,7 @@ test('renderMarkdown keeps html inside fenced code escaped', () => {
 })
 
 test('renderMarkdown renders linked badge images', () => {
-  const html = renderMarkdown('[![CI](https://img.shields.io/badge/ci-ok)](https://github.com/Tencent/skillhub)')
-  assert.match(html, /<a href="https:\/\/github\.com\/Tencent\/skillhub"[^>]*>/)
+  const html = renderMarkdown('[![CI](https://img.shields.io/badge/ci-ok)](https://github.com/cocofhu/skillhub)')
+  assert.match(html, /<a href="https:\/\/github\.com\/cocofhu\/skillhub"[^>]*>/)
   assert.match(html, /<img src="https:\/\/img\.shields\.io\/badge\/ci-ok" alt="CI" \/>/)
 })

@@ -42,7 +42,7 @@ Developers can share Skills here; agents and applications can find and use them.
 | Path | What it is |
 |------|------------|
 | [`docs/`](docs/) | Open API documentation, onboarding notes, and runnable examples |
-| [`dsh-plugin/`](dsh-plugin/) | SkillHub plugin for DeepSeek Harness (npm: `@tencent/skillhub`) |
+| [`dsh-plugin/`](dsh-plugin/) | SkillHub plugin for DeepSeek Harness (npm: `skillhub-plugin`) |
 | [`skills/`](skills/) | Official SkillHub Skills |
 
 ## Open API
@@ -78,15 +78,13 @@ Public APIs can be used from the docs as-is. Org-internal Skills require members
 
 ## DeepSeek Harness plugin
 
-[`dsh-plugin/`](dsh-plugin/) lets you search SkillHub skills in a DeepSeek Harness conversation, open details, and install them into the local skills directory. It also supports browsing by category, version selection, uninstall, a sidebar plugin marketplace, and in-chat search / one-click install of DSH plugins.
+[`dsh-plugin/`](dsh-plugin/) lets you search SkillHub skills in a DeepSeek Harness conversation, open details, and install them into the local skills directory. It also supports browsing by category, version selection, uninstall, a sidebar Skill Plaza, and in-chat search / one-click install of DSH plugins.
 
-Install from GitHub:
+Install from npm (prebuilt):
 
 ```sh
-dsh plugin --profile web add github:Tencent/skillhub#path:dsh-plugin
+dsh plugin --profile web add skillhub-plugin
 ```
-
-You can also install from npm (prebuilt): `dsh plugin --profile web add @tencent/skillhub`.
 
 Local development:
 
@@ -94,7 +92,7 @@ Local development:
 dsh plugin --profile web add /absolute/path/to/skillhub/dsh-plugin
 ```
 
-Then restart `dsh web` (bind `127.0.0.1`) and hard-refresh the browser. Use the scoped package `@tencent/skillhub`; the unscoped npm name `skillhub` is a different project.
+Then restart `dsh web` (bind `127.0.0.1`) and hard-refresh the browser. Install `skillhub-plugin`; the unscoped npm name `skillhub` is a different project.
 
 Features, configuration, development, and troubleshooting: [dsh-plugin/README.md](dsh-plugin/README.md).
 

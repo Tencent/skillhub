@@ -19,6 +19,7 @@ import type { IncomingMessage } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { dshArgv, nodeExecutable } from './dsh-cli.js'
+import { isDesktopHost } from './runtime-profile.js'
 
 function headerString(raw: string | string[] | undefined): string | undefined {
   if (raw === undefined) return undefined
@@ -215,8 +216,12 @@ export function scheduleRestart(
     pid?: number
     cgroup?: string
     uid?: number
+    desktopHost?: boolean
   } = {},
 ): RestartResult {
+  if (deps.desktopHost ?? isDesktopHost()) {
+    throw new Error('请使用 DeepSeek Harness Desktop 的应用菜单重启宿主')
+  }
   const pid = deps.pid ?? process.pid
   const systemd = systemdRestartArgv({
     cgroup: deps.cgroup ?? readProcCgroup(),

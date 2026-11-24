@@ -5,8 +5,8 @@
 
 import { spawn, type ChildProcess, type SpawnOptions } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, isAbsolute, join, resolve } from 'node:path'
-import { dshHome } from './config-store.js'
+import { isAbsolute, join, posix, resolve, win32 } from 'node:path'
+import { currentProfileDir, dshHome, isSafeProfileName, resolveRuntimeProfile } from './runtime-profile.js'
 import { createProgressTracker, type ProgressPhase } from './ndjson.js'
 
 export const WEB_PROFILE = 'web'
@@ -23,6 +23,7 @@ export interface DshArgv {
   args: string[]
   cwd: string | undefined
   viaShell: boolean
+  env?: NodeJS.ProcessEnv
 }
 
 export interface RunCommandOptions {
@@ -71,12 +72,14 @@ export function webProfileDir(): string {
   return join(dshHome(), 'profiles', WEB_PROFILE)
 }
 
+export { currentProfileDir } from './runtime-profile.js'
+
 export function isSafePluginTarget(target: string): boolean {
   return TARGET_RE.test(target)
 }
 
 export function quoteCmdArg(arg: string): string {
-  if (!CMD_METACHARS.test(arg)) return arg
+  if (arg !== '' && !CMD_METACHARS.test(arg)) return arg
   return `"${arg.replace(/"/g, '""')}"`
 }
 
@@ -90,23 +93,59 @@ export function dshArgv(input: {
   execPath?: string
   argv0?: string
   platform?: NodeJS.Platform
+  electron?: boolean
+  resourcesPath?: string
+  env?: NodeJS.ProcessEnv
+  pathExists?: (path: string) => boolean
 } = {}): DshArgv {
   const argv = input.argv ?? process.argv
   const execArgv = input.execArgv ?? process.execArgv
   const execPath = input.execPath ?? process.execPath
   const argv0 = input.argv0 ?? process.argv0
   const platform = input.platform ?? process.platform
-  const node = nodeExecutable(argv0, execPath)
+  const path = platform === 'win32' ? win32 : posix
+  const env = input.env ?? process.env
+  const electron = input.electron ?? (Boolean(process.versions.electron) || env.ELECTRON_RUN_AS_NODE === '1')
+  const node = electron ? execPath : nodeExecutable(argv0, execPath)
   const entry = argv[1]
+  const nodeEnv = electron ? { ELECTRON_RUN_AS_NODE: '1' } : undefined
   if (entry !== undefined && /[\\/](?:bin\.(?:js|ts)|dsh)$/.test(entry)) {
-    const abs = resolve(entry)
-    return { file: node, args: [...execArgv, abs], cwd: dirname(abs), viaShell: false }
+    const abs = path.resolve(entry)
+    return {
+      file: node, args: [...execArgv, abs], cwd: /\.asar[\\/]/u.test(abs) ? undefined : path.dirname(abs),
+      viaShell: false, ...(nodeEnv === undefined ? {} : { env: nodeEnv }),
+    }
+  }
+  const desktopHost = entry !== undefined
+    && /[\\/]@deepseek-ai[\\/]dsh-desktop-host[\\/]lib[\\/](?:index|cli)\.js$/u.test(entry)
+  if (electron || desktopHost) {
+    const roots: string[] = []
+    const candidates: string[] = []
+    if (desktopHost && entry !== undefined) {
+      candidates.push(path.join(path.dirname(path.resolve(entry)), 'cli.js'))
+      roots.push(path.resolve(path.dirname(entry), '../../../..'))
+      if (argv[2] !== undefined && path.isAbsolute(argv[2])) roots.unshift(argv[2])
+    }
+    const resources = input.resourcesPath
+      ?? (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath
+      ?? (platform === 'darwin'
+        ? path.resolve(path.dirname(execPath), '../Resources')
+        : path.join(path.dirname(execPath), 'resources'))
+    roots.push(path.join(resources, 'app.asar', 'dsh'), path.join(resources, 'dsh'))
+    for (const root of roots) {
+      candidates.push(path.join(root, 'node_modules', '@deepseek-ai', 'dsh-desktop-host', 'lib', 'cli.js'))
+    }
+    // Only the official Desktop carrier preserves bundled pnpm and grants
+    // reserved-profile access. The ordinary dsh bin rejects `desktop`.
+    const cli = candidates.find(input.pathExists ?? existsSync)
+    if (cli === undefined) throw new Error('无法定位桌面宿主内置的 dsh CLI 管理入口，请升级或重新安装 DeepSeek Harness 桌面版。')
+    return { file: execPath, args: ['--expose-internals', cli], cwd: undefined, viaShell: false, env: { ELECTRON_RUN_AS_NODE: '1' } }
   }
   return { file: 'dsh', args: [], cwd: undefined, viaShell: platform === 'win32' }
 }
 
 export function nodeExecutable(argv0: string | undefined = process.argv0, execPath: string = process.execPath): string {
-  if (argv0 !== undefined && argv0 !== '' && isAbsolute(argv0) && existsSync(argv0)) return argv0
+  if (argv0 !== undefined && argv0 !== '' && !/\.(?:cmd|bat)$/iu.test(argv0) && isAbsolute(argv0) && existsSync(argv0)) return argv0
   return execPath
 }
 
@@ -188,7 +227,7 @@ export function writeDangerouslyAllowAllBuilds(profileDirectory: string): boolea
 export function rewritePnpmError(err: unknown): Error {
   const text = err instanceof Error ? err.message : String(err)
   if (isPrepareBlocked(text)) {
-    return new Error('该插件需要构建脚本（prepare），pnpm 默认拦截。广场安装会写入 profile 的 dangerouslyAllowAllBuilds 并重试；若仍失败请检查 web profile 是否可写。')
+    return new Error('该插件需要构建脚本（prepare），pnpm 默认拦截。广场安装会写入 profile 的 dangerouslyAllowAllBuilds 并重试；若仍失败请检查当前 profile 是否可写。')
   }
   if (/ERR_PNPM_PUBLIC_HOIST_PATTERN_DIFF/.test(text)) {
     return new Error('当前 profile 的 node_modules 由不同主版本的 pnpm 生成，安装前需要先重建依赖。')
@@ -205,11 +244,17 @@ export async function runDshPlugin(
     profileDir?: string
   } = {},
 ): Promise<string> {
-  if (profile !== WEB_PROFILE) throw new Error('仅支持 web profile')
+  if (!isSafeProfileName(profile)) throw new Error(`无效 profile 名称: ${profile}`)
   const target = pluginArgs[pluginArgs.length - 1] ?? ''
   if (!isSafePluginTarget(target)) throw new Error(`拒绝不安全的安装目标: ${target}`)
+  const runtime = resolveRuntimeProfile(profile)
+  const actualDir = resolve(runtime.dir)
+  const cliDir = resolve(runtime.home, 'profiles', profile)
+  if (process.platform === 'win32' ? actualDir.toLowerCase() !== cliDir.toLowerCase() : actualDir !== cliDir) {
+    throw new Error(`当前 profile 目录 ${runtime.dir} 与 dsh CLI 的目标目录不一致，已取消操作`)
+  }
   const argv = (deps.dshArgv ?? dshArgv)()
-  const prepared = preparePluginArgs(deps.profileDir ?? webProfileDir(), pluginArgs)
+  const prepared = preparePluginArgs(deps.profileDir ?? runtime.dir, pluginArgs)
   const tracker = beginProgress(target)
   const feed = makeProgressFeeder(tracker)
   const run = deps.runCommand ?? runCommand
@@ -217,7 +262,7 @@ export async function runDshPlugin(
     return await run(argv.file, [...argv.args, 'plugin', '--profile', profile, ...prepared], {
       cwd: argv.cwd,
       timeoutMs: INSTALL_TIMEOUT_MS,
-      env: { CI: 'true' },
+      env: { ...argv.env, CI: 'true', DSH_HOME: runtime.home },
       viaShell: argv.viaShell,
       detached: process.platform !== 'win32',
       onChunk: (text) => {
@@ -241,28 +286,30 @@ export async function addDshPlugin(
     runDshPlugin?: PluginRunner
     profileDir?: string
     allowAllBuilds?: (profileDirectory: string) => void
+    profile?: string
   } = {},
 ): Promise<string> {
   const run = deps.runDshPlugin ?? runDshPlugin
+  const profile = resolveRuntimeProfile(deps.profile).name
   const allowAllBuilds = deps.allowAllBuilds ?? writeDangerouslyAllowAllBuilds
   const retryAfterPrepare = async (err: unknown): Promise<string> => {
     const text = err instanceof Error ? err.message : String(err)
     if (!isPrepareBlocked(text)) throw rewritePnpmError(err)
-    allowAllBuilds(deps.profileDir ?? webProfileDir())
+    allowAllBuilds(deps.profileDir ?? currentProfileDir(profile))
     try {
-      return await run(WEB_PROFILE, ['add', source])
+      return await run(profile, ['add', source])
     } catch (retryErr) {
       throw rewritePnpmError(retryErr)
     }
   }
   try {
-    return await run(WEB_PROFILE, ['add', source])
+    return await run(profile, ['add', source])
   } catch (err) {
     const text = err instanceof Error ? err.message : String(err)
     if (text.includes('ERR_PNPM_PUBLIC_HOIST_PATTERN_DIFF')) {
-      await run(WEB_PROFILE, ['install', '--no-frozen-lockfile'])
+      await run(profile, ['install', '--no-frozen-lockfile'])
       try {
-        return await run(WEB_PROFILE, ['add', source])
+        return await run(profile, ['add', source])
       } catch (retryErr) {
         return await retryAfterPrepare(retryErr)
       }
@@ -303,13 +350,15 @@ export function runCommand(
       finish(new Error('命令已取消'))
     }
     options.signal?.addEventListener('abort', onAbort, { once: true })
-    child.stdout?.on('data', (chunk: Buffer) => {
-      const text = chunk.toString()
+    // Readable's UTF-8 decoder retains partial multibyte characters between chunks.
+    // stdout and stderr need independent decoder state.
+    child.stdout?.setEncoding('utf8')
+    child.stderr?.setEncoding('utf8')
+    child.stdout?.on('data', (text: string) => {
       out = (out + text).slice(-256 * 1024)
       options.onChunk?.(text)
     })
-    child.stderr?.on('data', (chunk: Buffer) => {
-      const text = chunk.toString()
+    child.stderr?.on('data', (text: string) => {
       out = (out + text).slice(-256 * 1024)
       options.onChunk?.(text)
     })
@@ -329,7 +378,9 @@ function spawnShim(file: string, args: readonly string[], options: SpawnShimOpti
     return spawn(file, [...args], { ...spawnOptions, shell: false })
   }
   const comspec = process.env.ComSpec ?? 'cmd.exe'
-  return spawn(comspec, ['/d', '/s', '/c', `"${cmdCommandLine([file, ...args])}"`], {
+  // cmd diagnostics otherwise use the system OEM code page (CP936 on Chinese
+  // Windows), while Node/pnpm emit UTF-8. Select one encoding before execution.
+  return spawn(comspec, ['/d', '/v:off', '/s', '/c', `"chcp 65001>nul && ${cmdCommandLine([file, ...args])}"`], {
     ...spawnOptions,
     shell: false,
     windowsVerbatimArguments: true,

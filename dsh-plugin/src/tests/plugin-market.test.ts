@@ -36,7 +36,7 @@ import {
 } from '../plugin-market.js'
 
 test('parsePluginRef accepts GitHub owner/name', () => {
-  assert.deepEqual(parsePluginRef('Tencent', 'skillhub'), { owner: 'Tencent', name: 'skillhub', fullName: 'Tencent/skillhub' })
+  assert.deepEqual(parsePluginRef('cocofhu', 'skillhub'), { owner: 'cocofhu', name: 'skillhub', fullName: 'cocofhu/skillhub' })
   assert.throws(() => parsePluginRef('../x', 'n'), /无效插件 owner/)
   assert.throws(() => parsePluginRef('o', 'a/b'), /无效插件 name/)
 })
@@ -157,12 +157,12 @@ test('resolveInstallSource can parse command when source is missing', () => {
   assert.equal(source, `github:o/n#${sha}`)
 })
 
-test('resolveInstallSource rejects force, other profile, and mismatched repo', () => {
+test('resolveInstallSource rejects force, unsafe profiles, and mismatched repo', () => {
   const sha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
   const expected = { owner: 'o', name: 'n', fullName: 'o/n' }
   assert.throws(() => resolveInstallSource(null, expected), /安装计划无效/)
   assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, command: 'dsh plugin --profile web add --force github:o/n' }, expected), /--force/)
-  assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, profile: 'desktop' }, expected), /web profile/)
+  assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, profile: '../desktop' }, expected), /profile 名称无效/)
   assert.throws(() => resolveInstallSource({ source: `github:evil/n#${sha}` }, expected), /仓库与所选插件不一致/)
   assert.throws(() => resolveInstallSource({ source: `github:o/n#${sha}`, plugin: { fullName: 'evil/n' } }, expected), /fullName/)
   assert.throws(() => resolveInstallSource({
@@ -254,7 +254,7 @@ test('installMarketPlugin does not spawn when the plan is for another repo', asy
 test('patchEntryIds extracts loader ids from cordis.patch.yml', () => {
   const a = '- insert:\n    - id: genui\n      name: \'@omdsh-dev/dsh-genui\'\n'
   assert.deepEqual(patchEntryIds(a), ['genui'])
-  const b = '# comment\n- insert:\n    - id: skillhub\n      name: \'@tencent/skillhub\'\n    - id: skillhub\n      name: dup\n'
+  const b = '# comment\n- insert:\n    - id: skillhub\n      name: \'@cocofhu/skillhub\'\n    - id: skillhub\n      name: dup\n'
   assert.deepEqual(patchEntryIds(b), ['skillhub'])
   assert.deepEqual(patchEntryIds(''), [])
   assert.deepEqual(patchEntryIds('- insert:\n    - name: no-id-here\n'), [])
@@ -264,14 +264,14 @@ test('collectInstalledPatchIds reads patch files of installed deps', () => {
   const dir = mkdtempSync(join(tmpdir(), 'skillhub-ids-'))
   try {
     writeFileSync(join(dir, 'package.json'), JSON.stringify({
-      dependencies: { '@tencent/skillhub': 'link:/x', 'dsh-plugin-genui': 'github:a/b#59fa47b' },
+      dependencies: { '@cocofhu/skillhub': 'link:/x', 'dsh-plugin-genui': 'github:a/b#59fa47b' },
     }))
-    mkdirSync(join(dir, 'node_modules', '@tencent', 'skillhub'), { recursive: true })
+    mkdirSync(join(dir, 'node_modules', '@cocofhu', 'skillhub'), { recursive: true })
     mkdirSync(join(dir, 'node_modules', 'dsh-plugin-genui'), { recursive: true })
-    writeFileSync(join(dir, 'node_modules', '@tencent', 'skillhub', 'cordis.patch.yml'), '- insert:\n    - id: skillhub\n      name: x\n')
+    writeFileSync(join(dir, 'node_modules', '@cocofhu', 'skillhub', 'cordis.patch.yml'), '- insert:\n    - id: skillhub\n      name: x\n')
     writeFileSync(join(dir, 'node_modules', 'dsh-plugin-genui', 'cordis.patch.yml'), '- insert:\n    - id: genui\n      name: y\n')
     const ids = collectInstalledPatchIds(dir)
-    assert.equal(ids.get('skillhub'), '@tencent/skillhub')
+    assert.equal(ids.get('skillhub'), '@cocofhu/skillhub')
     assert.equal(ids.get('genui'), 'dsh-plugin-genui')
     assert.equal(ids.size, 2)
   } finally {
@@ -408,7 +408,7 @@ test('listPlugins maps catalog payload and returns webBase', async () => {
 
 test('githubRepoFromSpec reads pinned github and https specs', () => {
   assert.equal(githubRepoFromSpec('github:ganyuanran/aegis#d5bda9fb9df0f94587283954f1c155816abe9002'), 'ganyuanran/aegis')
-  assert.equal(githubRepoFromSpec('github:Tencent/skillhub#feat/plaza-host-plugin-install'), 'tencent/skillhub')
+  assert.equal(githubRepoFromSpec('github:cocofhu/skillhub#feat/plaza-host-plugin-install'), 'cocofhu/skillhub')
   assert.equal(githubRepoFromSpec('https://github.com/ganyuanran/aegis.git'), 'ganyuanran/aegis')
   assert.equal(githubRepoFromSpec('^1.2.3'), null)
   assert.equal(githubRepoFromSpec('link:/tmp/skillhub'), null)

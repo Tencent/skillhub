@@ -213,3 +213,12 @@ test('readProcCgroup returns empty when /proc/self/cgroup is missing', () => {
   assert.equal(readProcCgroup(() => { throw new Error('ENOENT') }), '')
   assert.equal(readProcCgroup(() => '0::/system.slice/foo.service\n'), '0::/system.slice/foo.service\n')
 })
+
+test('Desktop restart never launches the plugin CLI as a replacement host', () => {
+  let spawned = false
+  assert.throws(() => scheduleRestart(null, {
+    desktopHost: true,
+    spawn: (() => { spawned = true }) as unknown as typeof import('node:child_process').spawn,
+  }), /Desktop.*应用菜单/)
+  assert.equal(spawned, false)
+})

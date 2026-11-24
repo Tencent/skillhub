@@ -7,6 +7,7 @@ import { CATEGORY_KEYS, categoryLabel, parseCategory } from './categories.js'
 import { assignConfig, readOverlay, sanitizeSortBy, withDefaults } from './config-store.js'
 import { installSkill, installedSlugs, listInstalled, uninstallSkill } from './install.js'
 import { handleApi, handleIcon } from './local-api.js'
+import { bindRuntimeProfileHost } from './runtime-profile.js'
 import {
   INSTALL_TIMEOUT_MS,
 } from './dsh-cli.js'
@@ -31,6 +32,7 @@ export const Config: Schema<Config> = Schema.object({
   apiBase: Schema.string().default('https://api.skillhub.cn').description('SkillHub API'),
   webBase: Schema.string().default('https://skillhub.cn').description('技能主页'),
   skillsDir: Schema.string().description('安装目录，默认 $DSH_HOME/skills'),
+  profile: Schema.string().default('').description('目标 profile，留空自动识别当前宿主'),
   timeoutMs: Schema.number().default(20000).description('上游请求超时（毫秒）'),
   userAgent: Schema.string().default('Mozilla/5.0 (compatible; skillhub/0.1)').description('请求 UA'),
   maxResults: Schema.number().default(12).description('搜索结果上限'),
@@ -39,6 +41,7 @@ export const Config: Schema<Config> = Schema.object({
 
 export function apply(ctx: Context, config: Config): void {
   bindLoaderHost(ctx as unknown as LoaderHost)
+  bindRuntimeProfileHost(ctx)
   const cfg = withDefaults(config)
   assignConfig(cfg, readOverlay())
 
@@ -169,7 +172,7 @@ export function apply(ctx: Context, config: Config): void {
   ctx.tools.register(defineTool({
     name: 'skillhub_plugin_install',
     description:
-      'Install a DeepSeek Harness (DSH) plugin into the current web profile after the user names one (装第一个 / 安装 dsh-browser). Pass owner and name from skillhub_plugin_search results. Runs the same install-plan checks as the plugin market. Do not print CLI commands. After success, tell the user to restart dsh web.',
+      'Install a DeepSeek Harness (DSH) plugin into the configured or current host profile after the user names one (装第一个 / 安装 dsh-browser). Pass owner and name from skillhub_plugin_search results. Runs the same install-plan checks as the plugin market. Do not print CLI commands. After success, tell the user to restart DeepSeek Harness.',
     parameters: {
       owner: { type: 'string', required: true, description: 'Plugin owner from search, e.g. deepseek-ai' },
       name: { type: 'string', required: true, description: 'Plugin name from search, e.g. dsh-browser' },
@@ -256,7 +259,7 @@ export function apply(ctx: Context, config: Config): void {
         'For installed skills, call skillhub_list / skillhub_uninstall.',
         'Finding / recommending / browsing DeepSeek Harness (DSH) plugins (插件): you MUST call skillhub_plugin_search, never web_search, bash, or printing install commands. One call per user message; extract a real keyword. 还有吗 → same previous query + offset. After plugin cards appear, reply with AT MOST one short sentence.',
         `Plugin categories: ${PLUGIN_CATEGORY_KEYS.join(', ')}.`,
-        'Install a plugin only after the user names one from the cards: skillhub_plugin_install with its owner and name. Then one short sentence reminding them to restart dsh web. Never print dsh plugin / npm / curl commands.',
+        'Install a plugin only after the user names one from the cards: skillhub_plugin_install with its owner and name. Then one short sentence reminding them to restart DeepSeek Harness. Never print dsh plugin / npm / curl commands.',
       ].join(' '),
     })
   })
@@ -357,5 +360,5 @@ export function renderPluginSearch(result: PluginSearchResult): string {
 }
 
 export function renderPluginInstall(result: PluginInstallResult): string {
-  return `✅ ${result.fullName} 已安装，请重启 dsh web 后生效。对用户只说一句含重启提示的短话。不要打印安装命令。`
+  return `✅ ${result.fullName} 已安装，请重启 DeepSeek Harness 后生效。对用户只说一句含重启提示的短话。不要打印安装命令。`
 }

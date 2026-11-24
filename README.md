@@ -42,7 +42,7 @@ SkillHub 聚合全球同步与本土上传的 Skills，并提供安全认证、�
 | 目录 | 内容 |
 |------|------|
 | [`docs/`](docs/) | Open API 文档、接入说明与可运行示例 |
-| [`dsh-plugin/`](dsh-plugin/) | DeepSeek Harness 的 SkillHub 插件（npm：`@tencent/skillhub`） |
+| [`dsh-plugin/`](dsh-plugin/) | DeepSeek Harness 的 SkillHub 插件（npm：`skillhub-plugin`） |
 | [`skills/`](skills/) | SkillHub 官方维护的 Skill |
 
 ## Open API
@@ -78,15 +78,13 @@ python3 docs/examples/python/list_skills.py
 
 ## DeepSeek Harness 插件
 
-[`dsh-plugin/`](dsh-plugin/) 让你在 DeepSeek Harness 对话里搜索 SkillHub 技能、查看详情，并安装到本机 skills 目录。也支持按分类浏览、版本选择、卸载、侧栏「插件广场」，以及对话内搜索 / 直装 DSH 插件。
+[`dsh-plugin/`](dsh-plugin/) 让你在 DeepSeek Harness 对话里搜索 SkillHub 技能、查看详情，并安装到本机 skills 目录。也支持按分类浏览、版本选择、卸载、侧栏「Skill 广场」，以及对话内搜索 / 直装 DSH 插件。
 
-从 GitHub 安装：
+从 npm 安装（预构建）：
 
 ```sh
-dsh plugin --profile web add github:Tencent/skillhub#path:dsh-plugin
+dsh plugin --profile web add skillhub-plugin
 ```
-
-也可以从 npm 安装（预构建）：`dsh plugin --profile web add @tencent/skillhub`。
 
 本地开发：
 
@@ -94,7 +92,7 @@ dsh plugin --profile web add github:Tencent/skillhub#path:dsh-plugin
 dsh plugin --profile web add /absolute/path/to/skillhub/dsh-plugin
 ```
 
-安装后重启 `dsh web`（请绑定 `127.0.0.1`），并强制刷新浏览器。请使用带 scope 的 `@tencent/skillhub`，不要安装 npm 上的无前缀包 `skillhub`。
+安装后重启 `dsh web`（请绑定 `127.0.0.1`），并强制刷新浏览器。请安装 `skillhub-plugin`，npm 上的无前缀包 `skillhub` 是另一个项目。
 
 功能、配置、开发与故障排查见 [dsh-plugin/README.md](dsh-plugin/README.md)。
 

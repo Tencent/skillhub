@@ -50,7 +50,7 @@ dsh web --host 127.0.0.1 --port 3080
 | `src/*.ts`（Host） | 重启 `dsh web` |
 | `src/client.js`（Client） | `cp src/client.js lib/client.js` 后强制刷新浏览器 |
 
-插件加载路径一般是 `~/.dsh/profiles/web/node_modules/@tencent/skillhub`。若改的是 git clone 目录，确认 profile 安装的是同一路径。
+插件加载路径一般是 `~/.dsh/profiles/web/node_modules/skillhub-plugin`。若改的是 git clone 目录，确认 profile 安装的是同一路径。
 
 ## 代码约定
 
@@ -88,13 +88,13 @@ dsh web --host 127.0.0.1 --port 3080
 
 ## 发布
 
-正式版走 GitHub Release tag，并由 `.github/workflows/publish.yml` 用 npm Trusted Publishing 发到 `@tencent/skillhub`。不要把 `NPM_TOKEN` 写进 workflow。npm 上的无前缀名 `skillhub` 已被占用。
+正式版走 `v*` tag，由仓库根目录 `.github/workflows/publish.yml` 在 `dsh-plugin/` 下用 npm Trusted Publishing 发到 `skillhub-plugin`。tag 必须与 `dsh-plugin/package.json` 的 `version` 一致，否则 Publish 会直接失败。不要把 `NPM_TOKEN` 写进 workflow。npm 上的无前缀名 `skillhub` 已被占用。
 
-1. 升 `package.json` 的 `version`，把 `CHANGELOG.md` 的 Unreleased 写入该版本，合并进 `main`。
+1. 升 `dsh-plugin/package.json` 的 `version`，把 `CHANGELOG.md` 的 Unreleased 写入该版本，合并进 `main`。
 2. 打 annotated tag 并推送，例如 `git tag -a v0.2.2 -m "v0.2.2" && git push origin v0.2.2`。
-3. 同时创建 GitHub Release；Actions 里的 Publish 会 `npm publish`。
+3. 推 tag 即触发 Actions 里的 Publish（`npm publish`）。再基于该 tag 创建 GitHub Release；插件设置页的 **更新** 按钮读取的是最新 Release，所以本仓库的 Release 只用于插件版本。
 
-Trusted Publisher 在 https://www.npmjs.com/package/@tencent/skillhub/access 绑定一次即可：
+Trusted Publisher 在 https://www.npmjs.com/package/skillhub-plugin/access 绑定一次即可：
 
 - Organization or user：`Tencent`
 - Repository：`skillhub`

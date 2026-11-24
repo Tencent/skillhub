@@ -11,16 +11,20 @@ import { renderMarkdown } from './markdown.js'
 import {
   fetchInstallPlan,
   installMarketPlugin,
+  isMarketPluginInstalled,
   isPluginInstallBusy,
   listPluginCategories,
   listPlugins,
   parsePluginRef,
+  readInstalledPlugins,
   resolveInstallSource,
+  searchMarketPlugins,
   withPluginInstallLock,
 } from './plugin-market.js'
 import { scheduleRestart, servingPort, trustedRestartRequest } from './restart.js'
 import { fetchEvalScore, fetchSkillTab } from './skill-detail.js'
 import { getUpdateStatus, updateToLatestRelease } from './self-update.js'
+import { currentProfileDir, resolveRuntimeProfile } from './runtime-profile.js'
 import type { PluginConfig, SkillCard } from './types.js'
 
 let restarting = false
@@ -74,14 +78,14 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       return sendJson(res, 200, { ok: true, ...publicConfig(cfg) })
     }
     if (method === 'updateCheck') {
-      const status = await getUpdateStatus({ timeoutMs: Math.min(cfg.timeoutMs, 20000), userAgent: cfg.userAgent })
+      const status = await getUpdateStatus({ timeoutMs: Math.min(cfg.timeoutMs, 20000), userAgent: cfg.userAgent }, { profile: cfg.profile })
       return sendJson(res, 200, { ok: true, ...status })
     }
     if (method === 'update') {
       const result = await updateToLatestRelease({
         timeoutMs: Math.max(cfg.timeoutMs, 120000),
         userAgent: cfg.userAgent,
-      })
+      }, { profile: cfg.profile })
       return sendJson(res, 200, { ok: true, ...result })
     }
     if (method === 'pluginCategories') {
@@ -89,13 +93,13 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       return sendJson(res, 200, { ok: true, items })
     }
     if (method === 'installedPlugins') {
-      const result = await listInstalledPlugins()
+      const result = await listInstalledPlugins(currentProfileDir(cfg.profile))
       return sendJson(res, 200, { ok: true, ...result })
     }
     if (method === 'pluginReadme') {
       const pkg = String(body.pkg || url.searchParams.get('pkg') || '').trim()
       if (!pkg) return sendJson(res, 400, { ok: false, error: '缺少 pkg' })
-      const result = await readInstalledPluginReadme(pkg)
+      const result = await readInstalledPluginReadme(pkg, currentProfileDir(cfg.profile))
       return sendJson(res, 200, { ok: true, ...result, html: renderMarkdown(result.readme) })
     }
     if (method === 'pluginUninstall') {
@@ -104,9 +108,10 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       const result = await withPluginInstallLock(async () => {
         // Drop the live loader fiber first so client-modules stops serving
         // /plugins/<pkg>/client.js before dsh plugin remove deletes the files.
-        const live = await setLivePluginDisabled(pkg, true, loaderHost())
+        const sameProfile = resolveRuntimeProfile(cfg.profile).name === resolveRuntimeProfile().name
+        const live = sameProfile && await setLivePluginDisabled(pkg, true, loaderHost())
         try {
-          const removed = await removeInstalledPlugin(pkg)
+          const removed = await removeInstalledPlugin(pkg, currentProfileDir(cfg.profile), { profile: cfg.profile })
           return { ...removed, restart: true }
         } catch (err) {
           if (live) await setLivePluginDisabled(pkg, false, loaderHost()).catch(() => false)
@@ -114,6 +119,34 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
         }
       })
       return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginSearch') {
+      const result = await searchMarketPlugins(cfg, {
+        q: body.q ?? body.query,
+        category: body.category,
+        sort: body.sort,
+        offset: body.offset,
+        limit: body.limit,
+      })
+      return sendJson(res, 200, { ok: true, ...result })
+    }
+    if (method === 'pluginInstalled') {
+      if (!Array.isArray(body.plugins) || body.plugins.length > 100) {
+        return sendJson(res, 400, { ok: false, error: 'plugins 必须是最多 100 个插件引用的数组' })
+      }
+      const installed = readInstalledPlugins(currentProfileDir(cfg.profile))
+      const items = []
+      for (const item of body.plugins) {
+        if (!item || typeof item !== 'object') return sendJson(res, 400, { ok: false, error: '无效插件引用' })
+        const raw = item as Record<string, unknown>
+        let ref: ReturnType<typeof parsePluginRef>
+        try { ref = parsePluginRef(raw.owner, raw.name) } catch {
+          return sendJson(res, 400, { ok: false, error: '无效插件引用' })
+        }
+        const repositoryUrl = typeof raw.repositoryUrl === 'string' ? raw.repositoryUrl.slice(0, 300) : ''
+        items.push({ fullName: ref.fullName, installed: isMarketPluginInstalled({ ...ref, repositoryUrl }, installed) })
+      }
+      return sendJson(res, 200, { ok: true, items })
     }
     if (method === 'plugins') {
       const result = await listPlugins(cfg, {
@@ -131,7 +164,7 @@ export async function handleApi(req: IncomingMessage, res: ServerResponse, cfg: 
       const plan = await fetchInstallPlan(cfg, ref.owner, ref.name)
       const source = resolveInstallSource(plan, ref)
       const plugin = (plan && typeof plan === 'object' ? (plan as { plugin?: { repositoryUrl?: unknown } }).plugin : undefined) || {}
-      return sendJson(res, 200, { ok: true, source, repositoryUrl: String(plugin.repositoryUrl || '') })
+      return sendJson(res, 200, { ok: true, source, profile: resolveRuntimeProfile(cfg.profile).name, repositoryUrl: String(plugin.repositoryUrl || '') })
     }
     if (method === 'pluginInstall') {
       const result = await withPluginInstallLock(() => installMarketPlugin(

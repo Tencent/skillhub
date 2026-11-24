@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
-  PLUGIN_GITHUB_SPEC,
+  PLUGIN_NPM_NAME,
   compareSemver,
   detectSource,
   fetchLatestRelease,
@@ -25,11 +25,15 @@ test('compareSemver orders versions', () => {
   assert.equal(normalizeVersion('v1.0.0'), '1.0.0')
 })
 
-test('detectSource recognizes link and github specs', () => {
+test('detectSource recognizes link, npm, and github specs', () => {
   assert.equal(detectSource('link:/root/workspace/skillhub'), 'link')
-  assert.equal(detectSource('github:Tencent/skillhub#v0.1.0'), 'github')
-  assert.equal(detectSource('https://github.com/Tencent/skillhub.git#v0.1.0'), 'github')
-  assert.equal(detectSource('1.0.0'), 'unknown')
+  assert.equal(detectSource('github:cocofhu/skillhub#v0.1.0'), 'github')
+  assert.equal(detectSource('github:Tencent/skillhub#v0.2.18&path:dsh-plugin'), 'github')
+  assert.equal(detectSource('https://github.com/cocofhu/skillhub.git#v0.1.0'), 'github')
+  assert.equal(detectSource('1.0.0'), 'npm')
+  assert.equal(detectSource('^0.2.17'), 'npm')
+  assert.equal(detectSource('latest'), 'npm')
+  assert.equal(detectSource('github:someone/else#v1.0.0'), 'unknown')
 })
 
 test('fetchLatestRelease maps GitHub payload', async () => {
@@ -49,7 +53,7 @@ test('getUpdateStatus marks github install up to date', async () => {
     fetchJson: async <T>() => ({ tag_name: 'v0.1.0' }) as T,
     runDshPlugin: async () => '',
     readPackageJson: () => ({ version: '0.1.0' }),
-    readProfilePackage: () => ({ dependencies: { skillhub: 'github:Tencent/skillhub#v0.1.0' } }),
+    readProfilePackage: () => ({ dependencies: { skillhub: 'github:cocofhu/skillhub#v0.1.0' } }),
     profileDir: () => '/tmp/profile-web',
   })
   assert.equal(status.upToDate, true)
@@ -62,14 +66,14 @@ test('getUpdateStatus allows updating from older github install', async () => {
     fetchJson: async <T>() => ({ tag_name: 'v0.2.0' }) as T,
     runDshPlugin: async () => '',
     readPackageJson: () => ({ version: '0.1.0' }),
-    readProfilePackage: () => ({ dependencies: { skillhub: 'github:Tencent/skillhub#v0.1.0' } }),
+    readProfilePackage: () => ({ dependencies: { skillhub: 'github:cocofhu/skillhub#v0.1.0' } }),
     profileDir: () => '/tmp/profile-web',
   })
   assert.equal(status.canUpdate, true)
   assert.equal(status.latest?.version, '0.2.0')
 })
 
-test('updateToLatestRelease runs dsh plugin add with release tag', async () => {
+test('updateToLatestRelease installs the release version from npm', async () => {
   const seen: string[][] = []
   const result = await updateToLatestRelease({ timeoutMs: 1000, userAgent: 't' }, {
     fetchJson: async <T>() => ({ tag_name: 'v0.2.0' }) as T,
@@ -78,12 +82,30 @@ test('updateToLatestRelease runs dsh plugin add with release tag', async () => {
       return 'ok'
     },
     readPackageJson: () => ({ version: seen.length ? '0.2.0' : '0.1.0' }),
-    readProfilePackage: () => ({ dependencies: { skillhub: 'github:Tencent/skillhub#v0.1.0' } }),
+    readProfilePackage: () => ({ dependencies: { skillhub: 'github:cocofhu/skillhub#v0.1.0' } }),
     profileDir: () => '/tmp/profile-web',
   })
   assert.equal(result.updated, true)
   assert.equal(result.restartedHint, true)
-  assert.deepEqual(seen[0], ['web', 'add', `${PLUGIN_GITHUB_SPEC}#v0.2.0`])
+  assert.equal(result.source, 'npm')
+  assert.deepEqual(seen, [['web', 'add', `${PLUGIN_NPM_NAME}@0.2.0`]])
+})
+
+test('updateToLatestRelease removes the plugin installed under a legacy name', async () => {
+  const seen: string[][] = []
+  const result = await updateToLatestRelease({ timeoutMs: 1000, userAgent: 't' }, {
+    fetchJson: async <T>() => ({ tag_name: 'v0.2.18' }) as T,
+    runDshPlugin: async (profile, args) => {
+      seen.push([profile, ...args])
+      return 'ok;'
+    },
+    readPackageJson: () => ({ name: '@cocofhu/skillhub', version: seen.length ? '0.2.18' : '0.2.17' }),
+    readProfilePackage: () => ({ dependencies: { '@cocofhu/skillhub': '0.2.17' } }),
+    profileDir: () => '/tmp/profile-web',
+  })
+  assert.equal(result.updated, true)
+  assert.deepEqual(seen, [['web', 'add', 'skillhub-plugin@0.2.18'], ['web', 'remove', '@cocofhu/skillhub']])
+  assert.equal(result.log, 'ok;ok;')
 })
 
 test('updateToLatestRelease no-ops when already latest', async () => {
@@ -93,7 +115,7 @@ test('updateToLatestRelease no-ops when already latest', async () => {
       throw new Error('should not run')
     },
     readPackageJson: () => ({ version: '0.1.0' }),
-    readProfilePackage: () => ({ dependencies: { skillhub: 'github:Tencent/skillhub#v0.1.0' } }),
+    readProfilePackage: () => ({ dependencies: { skillhub: 'github:cocofhu/skillhub#v0.1.0' } }),
     profileDir: () => '/tmp/profile-web',
   })
   assert.equal(result.updated, false)
@@ -125,7 +147,7 @@ test('runCommand is re-exported from the CLI helper', async () => {
 test('package helpers read local package.json', async () => {
   const { packageRoot, readPackageJson, webProfileDir } = await import('../self-update.js')
   const pkg = readPackageJson(packageRoot())
-  assert.equal(pkg.name, '@tencent/skillhub')
+  assert.equal(pkg.name, 'skillhub-plugin')
   assert.match(pkg.version || '', /^\d+\.\d+\.\d+/)
   assert.match(webProfileDir(), /profiles\/web$/)
 })
