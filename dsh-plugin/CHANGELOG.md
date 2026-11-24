@@ -4,11 +4,52 @@
 
 ## [Unreleased]
 
+## [0.2.18] - 2026-11-24
+
+### Changed
+
+- 源码与发布迁移到 [Tencent/skillhub](https://github.com/Tencent/skillhub) 的 `dsh-plugin/` 目录；打 `v*` tag 由仓库根目录的 Publish 工作流以 npm Trusted Publishing 发布 `skillhub-plugin`
+- 设置页「更新」改为读取 Tencent/skillhub 的最新 release，并用 `dsh plugin add skillhub-plugin@X.Y.Z` 从 npm 安装预构建包，不再从 GitHub 源码安装
+- `package.json` 的 `repository` / `homepage` / `bugs` 指向 Tencent/skillhub
+
+### Removed
+
+- 停止发布兼容包名 `@cocofhu/skillhub`；通过设置页更新时会改装 `skillhub-plugin` 并移除旧包，避免同一 profile 加载两份插件
+
+## [0.2.17] - 2026-11-24
+
+### Changed
+
+- 侧栏底部「插件广场」改为侧栏顶部导航的「Skill 广场」（英文 Skill Plaza）：以原生主面板打开，只浏览 SkillHub 技能，可像其他导航项一样取消固定
+- 对话中 `skillhub_search` / `skillhub_list` / `skillhub_plugin_search` 的结果卡片改为展示在回复正文下方（`conversation.chat.turnTail`），不再被「已调用工具」折叠；工具组内只保留一行提示
+- Skill 广场入口改用线性拼图图标，与侧栏原生图标风格一致
+
+### Removed
+
+- 插件广场中的「插件」标签页（DSH 插件市场浏览 / 安装界面）；对话内搜索与直装 DSH 插件不受影响
+
+### Fixed
+
+- 插件广场、已安装徽章、安装 / 卸载和自更新跟随当前宿主 profile，修复 Desktop 与自定义 profile 被静默指向 `web` 的问题；设置中可查看和覆盖目标 profile（#36）
+- Windows Desktop 复用应用自带的 CLI 与包管理器，正确传递 Electron 的 Node 模式；命令输出按 UTF-8 流式解码，保留跨数据块的中文字符（#38）
+- 搜索与已安装工具卡片兼容宿主原始事件、结构化 metadata 和旧会话结果；空结果、运行中和失败状态提供可见反馈，Desktop 请求保留应用内鉴权转发（#40）
+
+### Added
+
+- Desktop / 自定义 profile、Windows CLI 与客户端 DOM 回归测试；CI 增加 Windows Node.js 22 / 24 的原生命令测试
+
 ## [0.2.16] - 2026-08-24
 
 ### Changed
 
-- 同步最新插件能力到 [Tencent/skillhub](https://github.com/Tencent/skillhub)；npm 包名保持 `@tencent/skillhub`
+- 验证 `skillhub-plugin` Trusted Publishing：打 tag 后由 GitHub Actions 同时发布两个 npm 包
+
+## [0.2.15] - 2026-08-24
+
+### Changed
+
+- npm 主包名改为无 scope 的 `skillhub-plugin`；打 `v*` tag 时 CI 同时发布 `skillhub-plugin` 与兼容包 `@cocofhu/skillhub`
+- 安装命令改为 `dsh plugin --profile web add skillhub-plugin`（`@cocofhu/skillhub` 仍可用）
 
 ## [0.2.14] - 2026-08-24
 
@@ -112,19 +153,19 @@
 
 ### Fixed
 
-- 客户端 `__ModuleLoader__.load` 的 `id` 改为 `@tencent/skillhub`，与 npm 包名一致，避免 Web 报 loaded without registering
+- 客户端 `__ModuleLoader__.load` 的 `id` 改为 `@cocofhu/skillhub`，与 npm 包名一致，避免 Web 报 loaded without registering
 
 ## [0.2.3] - 2026-08-18
 
 ### Fixed
 
-- `cordis.patch.yml` 的 `name` 改为 `@tencent/skillhub`，loader 才能从 npm 包 import，不再找不存在的无前缀 `skillhub`
+- `cordis.patch.yml` 的 `name` 改为 `@cocofhu/skillhub`，loader 才能从 npm 包 import，不再找不存在的无前缀 `skillhub`
 
 ## [0.2.2] - 2026-08-18
 
 ### Changed
 
-- 安装改为走 npm 包 `@tencent/skillhub`（`skillhub` 无前缀名已被占用），避免 git 源触发 `allowBuilds`
+- 安装改为走 npm 包 `@cocofhu/skillhub`（`skillhub` 无前缀名已被占用），避免 git 源触发 `allowBuilds`
 
 ## [0.2.1] - 2026-08-18
 

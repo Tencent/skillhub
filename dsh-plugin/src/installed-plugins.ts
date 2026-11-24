@@ -1,6 +1,7 @@
 import { open, readFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
-import { isSafePluginTarget, runDshPlugin, webProfileDir, type PluginRunner } from './dsh-cli.js'
+import { isSafePluginTarget, runDshPlugin, type PluginRunner } from './dsh-cli.js'
+import { currentProfileDir, resolveRuntimeProfile } from './runtime-profile.js'
 
 /** README 只读预览的字节上限,超过即截断并标记 truncated。 */
 export const README_MAX_BYTES = 64 * 1024
@@ -108,8 +109,8 @@ function sanitizePkgJson(raw: PkgJson, fallbackName: string): Omit<InstalledPlug
   }
 }
 
-/** 枚举 web profile 已安装插件(只读)。profile 缺失返回空列表;非 dsh 依赖仅计数。 */
-export async function listInstalledPlugins(profileDir: string = webProfileDir()): Promise<InstalledPluginsResult> {
+/** 枚举当前 profile 已安装插件(只读)。profile 缺失返回空列表;非 dsh 依赖仅计数。 */
+export async function listInstalledPlugins(profileDir: string = currentProfileDir()): Promise<InstalledPluginsResult> {
   const root = resolve(profileDir)
   const deps = await readProfileDeps(root)
   const items: InstalledPlugin[] = []
@@ -139,12 +140,12 @@ export async function listInstalledPlugins(profileDir: string = webProfileDir())
 }
 
 /** 读取单个已安装插件的 README(UTF-8 文本,≤64KB,超限截断)。pkg 必须来自 profile 依赖。 */
-export async function readInstalledPluginReadme(pkg: string, profileDir: string = webProfileDir()): Promise<PluginReadme> {
+export async function readInstalledPluginReadme(pkg: string, profileDir: string = currentProfileDir()): Promise<PluginReadme> {
   const key = String(pkg || '').trim()
   if (!isSafePkgName(key)) throw new Error(`无效插件包名: ${pkg}`)
   const root = resolve(profileDir)
   const deps = await readProfileDeps(root)
-  if (!(key in deps)) throw new Error(`web profile 未安装该插件: ${key}`)
+  if (!(key in deps)) throw new Error(`当前 profile 未安装该插件: ${key}`)
   const dir = resolvePluginDir(root, key, deps[key])
   if (!dir) throw new Error(`无法解析插件目录: ${key}`)
   const raw = await readPkgJson(dir)
@@ -156,22 +157,22 @@ export async function readInstalledPluginReadme(pkg: string, profileDir: string 
   return { pkg: key, name, readme: '', truncated: false }
 }
 
-/** 从 web profile 卸载已安装的 dsh 插件。pkg 必须来自 profile 依赖。 */
+/** 从当前 profile 卸载已安装的 dsh 插件。pkg 必须来自 profile 依赖。 */
 export async function removeInstalledPlugin(
   pkg: string,
-  profileDir: string = webProfileDir(),
-  deps: { runDshPlugin?: PluginRunner } = {},
+  profileDir: string = currentProfileDir(),
+  deps: { runDshPlugin?: PluginRunner; profile?: string } = {},
 ): Promise<{ pkg: string }> {
   const key = String(pkg || '').trim()
   if (!isSafePkgName(key) || !isSafePluginTarget(key)) throw new Error(`无效插件包名: ${pkg}`)
   const root = resolve(profileDir)
   const listed = await readProfileDeps(root)
-  if (!(key in listed)) throw new Error(`web profile 未安装该插件: ${key}`)
+  if (!(key in listed)) throw new Error(`当前 profile 未安装该插件: ${key}`)
   const dir = resolvePluginDir(root, key, listed[key])
   const raw = dir ? await readPkgJson(dir) : null
   if (!raw || !('dsh' in raw)) throw new Error(`不是 dsh 插件: ${key}`)
   const run = deps.runDshPlugin ?? runDshPlugin
-  await run('web', ['remove', key])
+  await run(resolveRuntimeProfile(deps.profile).name, ['remove', key])
   return { pkg: key }
 }
 

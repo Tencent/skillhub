@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join, win32 } from 'node:path'
 import test from 'node:test'
 import {
   addDshPlugin,
@@ -58,10 +58,90 @@ test('dshArgv recognizes bin.js and a trailing dsh entry', () => {
   assert.deepEqual(dshBin.args, ['/usr/local/bin/dsh'])
 })
 
+test('dshArgv locates the Desktop CLI carrier beside the host and runs Electron in Node mode', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'skillhub 桌面 runtime-'))
+  try {
+    const runtime = join(root, 'resources', 'app.asar', 'dsh')
+    const host = join(runtime, 'node_modules', '@deepseek-ai', 'dsh-desktop-host', 'lib', 'index.js')
+    const cli = join(dirname(host), 'cli.js')
+    mkdirSync(dirname(host), { recursive: true })
+    writeFileSync(cli, "process.stdout.write(JSON.stringify({ args: process.argv.slice(2), node: process.env.ELECTRON_RUN_AS_NODE }))")
+    const launch = dshArgv({
+      argv: [process.execPath, host, runtime, root], execArgv: ['--inspect=127.0.0.1:9230'],
+      execPath: process.execPath, electron: true,
+    })
+    assert.equal(launch.file, process.execPath)
+    assert.deepEqual(launch.args, ['--expose-internals', cli])
+    assert.deepEqual(launch.env, { ELECTRON_RUN_AS_NODE: '1' })
+    assert.equal(launch.cwd, undefined, 'an ASAR directory cannot be used as a child process cwd')
+    assert.equal(launch.viaShell, false)
+    const out = await runDshPlugin('web', ['add', '@scope/plugin'], { dshArgv: () => launch, profileDir: root })
+    assert.deepEqual(JSON.parse(out), {
+      args: ['plugin', '--profile', 'web', 'add', '@scope/plugin', '--reporter=ndjson'], node: '1',
+    })
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('dshArgv finds packaged Windows and macOS Desktop runtimes with spaces and Chinese paths', () => {
+  const resources = 'C:\\Program Files\\深度求索\\resources'
+  const cli = win32.join(resources, 'app.asar', 'dsh', 'node_modules', '@deepseek-ai', 'dsh-desktop-host', 'lib', 'cli.js')
+  const executable = 'C:\\Program Files\\深度求索\\DeepSeek Harness.exe'
+  const windows = dshArgv({
+    argv: [executable, win32.join(resources, 'app.asar', 'lib', 'main.js')],
+    execPath: executable, electron: true, platform: 'win32', pathExists: (path) => path === cli,
+  })
+  assert.equal(windows.file, executable)
+  assert.deepEqual(windows.args, ['--expose-internals', cli])
+  assert.deepEqual(windows.env, { ELECTRON_RUN_AS_NODE: '1' })
+  assert.equal(windows.viaShell, false)
+  const macCli = '/Applications/深度 求索.app/Contents/Resources/app.asar/dsh/node_modules/@deepseek-ai/dsh-desktop-host/lib/cli.js'
+  const mac = dshArgv({
+    argv: [], execPath: '/Applications/深度 求索.app/Contents/MacOS/DeepSeek Harness',
+    electron: true, platform: 'darwin', pathExists: (path) => path === macCli,
+  })
+  assert.deepEqual(mac.args, ['--expose-internals', macCli])
+})
+
+test('dshArgv rejects Desktop runtimes without the official CLI carrier', () => {
+  const root = '/desktop/runtime'
+  const host = `${root}/node_modules/@deepseek-ai/dsh-desktop-host/lib/index.js`
+  const cli = `${root}/node_modules/@deepseek-ai/dsh/lib/bin.js`
+  assert.throws(() => dshArgv({
+    argv: ['/desktop/electron', host, root], execPath: '/desktop/electron', platform: 'linux',
+    electron: false, pathExists: (path) => path === cli,
+  }), /请升级或重新安装 DeepSeek Harness 桌面版/)
+  assert.throws(() => dshArgv({
+    argv: [], execPath: '/desktop/electron', platform: 'linux', env: { ELECTRON_RUN_AS_NODE: '1' },
+    resourcesPath: '/custom/resources', pathExists: () => false,
+  }), /无法定位桌面宿主内置的 dsh CLI/)
+})
+
+test('dshArgv preserves direct Windows CLI paths and avoids ASAR working directories', () => {
+  const executable = 'C:\\Program Files\\DeepSeek Harness.exe'
+  const entry = 'C:\\Program Files\\resources\\app.asar\\dsh\\lib\\bin.js'
+  const launch = dshArgv({
+    argv: [executable, entry], execArgv: ['--expose-internals'], execPath: executable,
+    electron: true, platform: 'win32',
+  })
+  assert.deepEqual(launch.args, ['--expose-internals', entry])
+  assert.equal(launch.cwd, undefined)
+  assert.deepEqual(launch.env, { ELECTRON_RUN_AS_NODE: '1' })
+})
+
 test('nodeExecutable prefers an existing absolute argv0', () => {
   assert.equal(nodeExecutable(process.execPath, '/not-used'), process.execPath)
   assert.equal(nodeExecutable('node', '/usr/bin/node'), '/usr/bin/node')
   assert.equal(nodeExecutable('', '/usr/bin/node'), '/usr/bin/node')
+  const root = mkdtempSync(join(tmpdir(), 'skillhub-node-shim-'))
+  try {
+    const shim = join(root, 'node.cmd')
+    writeFileSync(shim, '@echo off\r\n')
+    assert.equal(nodeExecutable(shim, process.execPath), process.execPath)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
 })
 
 test('pluginArgsFor injects -w only at a workspace root', () => {
@@ -79,7 +159,8 @@ test('pluginArgsFor injects -w only at a workspace root', () => {
 
 test('isSafePluginTarget allows github pins and rejects metacharacters', () => {
   assert.equal(isSafePluginTarget('github:liustack/modlens#cb481974e1154afffd3835689284d3d28e57c7e1'), true)
-  assert.equal(isSafePluginTarget('@tencent/skillhub'), true)
+  assert.equal(isSafePluginTarget('@cocofhu/skillhub'), true)
+  assert.equal(isSafePluginTarget('skillhub-plugin'), true)
   assert.equal(isSafePluginTarget('--no-frozen-lockfile'), true)
   assert.equal(isSafePluginTarget('foo;rm'), false)
   assert.equal(isSafePluginTarget('a b'), false)
@@ -87,6 +168,7 @@ test('isSafePluginTarget allows github pins and rejects metacharacters', () => {
 
 test('quoteCmdArg and cmdCommandLine quote cmd metacharacters', () => {
   assert.equal(quoteCmdArg('plain'), 'plain')
+  assert.equal(quoteCmdArg(''), '""')
   assert.equal(quoteCmdArg('a b'), '"a b"')
   assert.equal(quoteCmdArg('say "hi"'), '"say ""hi"""')
   assert.equal(cmdCommandLine(['dsh', 'plugin', 'add', 'github:o/n#abc']), 'dsh plugin add github:o/n#abc')
@@ -156,8 +238,8 @@ test('runDshPlugin injects -w when the profile is a workspace', async () => {
   }
 })
 
-test('runDshPlugin rejects non-web profiles and unsafe targets', async () => {
-  await assert.rejects(() => runDshPlugin('desktop', ['add', 'pkg']), /web profile/)
+test('runDshPlugin rejects unsafe profiles and unsafe targets', async () => {
+  await assert.rejects(() => runDshPlugin('../desktop', ['add', 'pkg']), /profile/)
   await assert.rejects(() => runDshPlugin('web', ['add', 'pkg && reboot']), /不安全/)
 })
 
@@ -374,6 +456,45 @@ test('runCommand forwards stdout and stderr chunks to onChunk', async () => {
   )
   assert.match(out, /chunk-a/)
   assert.match(out, /chunk-b/)
-  assert.equal(seen.join(''), 'chunk-achunk-b')
+  assert.equal(seen.join(''), out)
+})
+
+test('runCommand decodes split UTF-8 characters independently on stdout and stderr', async () => {
+  const seen: string[] = []
+  const script = [
+    "const out = Buffer.from('中文🚀'), err = Buffer.from('错误信息')",
+    'process.stdout.write(out.subarray(0, 1))',
+    'process.stderr.write(err.subarray(0, 2))',
+    'setTimeout(() => { process.stdout.write(out.subarray(1)); process.stderr.write(err.subarray(2)) }, 50)',
+  ].join('; ')
+  const out = await runCommand(process.execPath, ['-e', script], { timeoutMs: 5000, onChunk: (chunk) => seen.push(chunk) })
+  assert.match(out, /中文🚀/u)
+  assert.match(out, /错误信息/u)
+  assert.equal(out.includes('\uFFFD'), false)
+  assert.equal(seen.join(''), out)
+})
+
+test('Windows shell launches a cmd shim from a Chinese path and preserves arguments', { skip: process.platform !== 'win32' }, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'skillhub 中文 shell-'))
+  try {
+    const shim = join(root, 'dsh shim.cmd')
+    writeFileSync(shim, '@echo off\r\n"%SKILLHUB_TEST_NODE%" "%~dp0capture.cjs" %*\r\n')
+    writeFileSync(join(root, 'capture.cjs'), 'process.stdout.write(JSON.stringify(process.argv.slice(2)))')
+    const args = ['plugin', '--profile', 'desktop', '中文 路径', '']
+    const out = await runCommand(shim, args, {
+      timeoutMs: 5000, viaShell: true, env: { SKILLHUB_TEST_NODE: process.execPath },
+    })
+    assert.deepEqual(JSON.parse(out), args)
+    await assert.rejects(
+      () => runCommand('skillhub-不存在的命令', [], { timeoutMs: 5000, viaShell: true }),
+      (error: Error) => {
+        assert.match(error.message, /skillhub-不存在的命令/u)
+        assert.equal(error.message.includes('\uFFFD'), false)
+        return true
+      },
+    )
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
 })
 

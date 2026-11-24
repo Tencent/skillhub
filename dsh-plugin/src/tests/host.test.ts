@@ -206,7 +206,7 @@ test('renderPluginInstall reminds about restart and prints no commands', () => {
     log: '',
   })
   assert.match(text, /deepseek-ai\/dsh-browser 已安装/)
-  assert.match(text, /重启 dsh web/)
+  assert.match(text, /重启 DeepSeek Harness/)
   assert.match(text, /不要打印安装命令/)
   assert.doesNotMatch(text, /dsh plugin|curl|npm /)
 })

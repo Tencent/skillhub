@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: "@tencent/skillhub",
+  id: "skillhub-plugin",
   factory: (require) => {
     const React = require("react");
     const h = React.createElement;
@@ -179,23 +179,10 @@ window.__ModuleLoader__.load({
 .sh-mkt-more-left{color:var(--dsw-alias-label-tertiary,#7b8088);font-size:12px;font-weight:400;font-variant-numeric:tabular-nums}
 .sh-mkt-more svg{flex:none;width:14px;height:14px}
 @media (max-width:680px){.sh-mkt-grid{grid-template-columns:minmax(0,1fr)}.sh-mkt-search{align-items:stretch;flex-direction:column}.sh-mkt-go{width:100%}}
-.sh-plaza-wrap{width:100%}
-.sh-plaza-wrap.rail{display:flex;justify-content:center}
-.sh-plaza-trigger{box-sizing:border-box;display:flex;align-items:center;gap:8px;width:calc(100% + 4px);height:42px;margin:4px -2px;padding:0 10px 0 8px;border:0;border-radius:12px;background:transparent;color:var(--dsw-alias-label-primary,inherit);font:inherit;font-size:14px;line-height:22px;cursor:pointer;overflow:hidden}
-.sh-plaza-wrap.rail .sh-plaza-trigger{width:36px;height:36px;margin:8px 0 10px;padding:0;justify-content:center;border-radius:50%;gap:0}
-.sh-plaza-trigger:hover{background:var(--dsw-alias-interactive-bg-hover,#f3f4f6)}
-.sh-plaza-trigger svg{flex:none;width:16px;height:16px}
-.sh-plaza-wrap.rail .sh-plaza-trigger svg{width:18px;height:18px}
-.sh-plaza-trigger.on,.sh-plaza-trigger[aria-expanded=true]{background:var(--dsw-specific-sidebar-nav-item-active,#ebeef2)}
-.sh-plaza-trigger span{white-space:nowrap;overflow:hidden}
-.sh-plaza-page{position:fixed;z-index:40;box-sizing:border-box;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--dsw-alias-bg-base,#fff);color:var(--dsw-alias-label-primary,#17191c)}
+.sh-plaza-panel{box-sizing:border-box;display:flex;flex-direction:column;width:100%;height:100%;min-height:0;overflow:hidden;background:var(--dsw-alias-bg-base,#fff);color:var(--dsw-alias-label-primary,#17191c)}
 .sh-plaza-top{display:flex;align-items:center;gap:16px;flex:none;padding:10px 20px;border-bottom:1px solid var(--dsw-alias-border-l2,#e2e4e8);background:var(--dsw-alias-bg-base,#fff)}
-.sh-plaza-tabs{display:flex;align-items:center;gap:16px;padding:0;border:0;background:inherit}
-.sh-plaza-tab{height:30px;padding:0;border:0;border-radius:0;background:inherit;color:var(--dsw-alias-label-tertiary,#7b8088);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
-.sh-plaza-tab:hover{color:var(--dsw-alias-label-primary,#17191c)}
-.sh-plaza-tab.on{background:inherit;color:var(--dsw-alias-state-business-primary,#4d6bfe);box-shadow:none}
-.sh-plaza-close{margin-left:auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2,#d1d5db);background:var(--dsw-alias-bg-layer-3,#fff);cursor:pointer;font-size:18px;line-height:1;color:var(--dsw-alias-label-secondary,#4b5563)}
-.sh-plaza-close:hover{background:var(--dsw-alias-interactive-bg-hover,#f3f4f6)}
+.sh-turn-cards{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.sh-plaza-heading{height:30px;font-size:15px;font-weight:600;line-height:30px}
 .sh-plaza-body{flex:1;min-height:0;overflow:auto;padding:18px 20px 32px}
 .sh-plaza-body .sh-mkt{max-width:none;width:100%}
 .sh-plaza-body .sh-cards,.sh-plaza-body .sh-mkt-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
@@ -401,6 +388,8 @@ window.__ModuleLoader__.load({
       "cfg.expand": "展开",
       "cfg.api": "API 地址",
       "cfg.dir": "安装目录",
+      "cfg.profile": "目标 profile（留空自动识别）",
+      "cfg.activeProfile": "当前目标：{name}",
       "cfg.max": "搜索结果上限",
       "cfg.discard": "放弃修改",
       "cfg.save": "保存",
@@ -418,6 +407,7 @@ window.__ModuleLoader__.load({
       "badge.installed": "已装",
       "search.hint": "点击卡片查看详情并安装 · {n} 条",
       "search.empty": "没有结果",
+      "tool.failed": "工具执行失败：{m}",
       "tab.overview": "概述",
       "tab.versions": "版本历史",
       "tab.evaluation": "评测报告",
@@ -477,36 +467,34 @@ window.__ModuleLoader__.load({
       "mkt.sending": "正在安装",
       "mkt.install": "安装",
       "mkt.installed": "已安装",
-      "mkt.sent": "已安装 {name}，请重启 dsh web。",
+      "mkt.sent": "已安装 {name}，请重启 DeepSeek Harness。",
       "mkt.progressHint": "首次安装需要下载与解析依赖，大插件可能要 1–3 分钟",
       "mkt.phaseResolving": "解析依赖",
       "mkt.phaseDownloading": "下载中",
       "mkt.phaseLinking": "链接依赖",
       "mkt.phaseBuilding": "运行构建脚本",
       "mkt.packagesDone": "已处理 {n} 个包",
-      "mkt.restartBanner": "已安装 {name}，请重启 dsh web 后生效",
-      "mkt.uninstallRestartBanner": "已卸载 {name}，请重启 dsh web 后完全卸载",
+      "mkt.restartBanner": "已安装 {name}，请重启 DeepSeek Harness 后生效",
+      "mkt.uninstallRestartBanner": "已卸载 {name}，请重启 DeepSeek Harness 后完全卸载",
       "mkt.restartNow": "立即重启",
+      "mkt.manualRestart": "请退出并重新打开 DeepSeek Harness，使插件变更生效。",
       "mkt.restarting": "正在重启…",
       "mkt.restartFail": "重启失败：{m}",
-      "mkt.restartTimeout": "等待 DeepSeek Harness 启动超时，请手动重启 dsh web",
+      "mkt.restartTimeout": "等待 DeepSeek Harness 启动超时，请手动重启 DeepSeek Harness",
       "mkt.more": "加载更多",
       "mkt.moreLeft": "还剩 {n} 个",
       "mkt.moreLoading": "加载中…",
       "mkt.catAll": "全部",
       "mkt.searching": "正在搜索「{q}」…",
       "mkt.switching": "切换分类中…",
-      "plaza.title": "插件广场",
-      "plaza.skills": "技能",
-      "plaza.plugins": "插件",
-      "plaza.noSession": "请先打开一个会话",
-      "plaza.back": "返回对话",
+      "plaza.title": "Skill 广场",
+      "tail.moved": "{n} 张卡片已展示在回复下方",
       "plg.hint": "已为你找到 {n} 款插件 · 点击卡片查看详情并安装",
       "plg.queued": "正在安装其他插件，请稍候",
       "plg.retry": "重试",
       "plg.failed": "安装失败：{m}",
       "plg.sourceTitle": "安装来源（install-plan 校验：pinned commit · 仓库一致 · 拒绝 --force）",
-      "plg.installedHint": "已安装 · 重启 dsh web 后生效",
+      "plg.installedHint": "已安装 · 重启 DeepSeek Harness 后生效",
       "scope.all": "全部",
       "scope.installed": "已安装",
       "meta.files": "{n} 个文件",
@@ -515,7 +503,7 @@ window.__ModuleLoader__.load({
       "stat.size": "总大小",
       "stat.updated": "更新于",
       "inst.error": "读取本机技能失败：{m}",
-      "ip.empty": "web profile 还没有已安装的 dsh 插件",
+      "ip.empty": "当前 profile 还没有已安装的 DSH 插件",
       "ip.error": "读取本机插件失败：{m}",
       "ip.tab.overview": "概览",
       "ip.tab.readme": "README",
@@ -544,6 +532,8 @@ window.__ModuleLoader__.load({
       "cfg.expand": "Expand",
       "cfg.api": "API URL",
       "cfg.dir": "Install directory",
+      "cfg.profile": "Target profile (blank for automatic)",
+      "cfg.activeProfile": "Current target: {name}",
       "cfg.max": "Search result limit",
       "cfg.discard": "Discard",
       "cfg.save": "Save",
@@ -561,6 +551,7 @@ window.__ModuleLoader__.load({
       "badge.installed": "On",
       "search.hint": "Click a card to view details and install · {n}",
       "search.empty": "No results",
+      "tool.failed": "Tool failed: {m}",
       "tab.overview": "Overview",
       "tab.versions": "Versions",
       "tab.evaluation": "Evaluation",
@@ -620,36 +611,34 @@ window.__ModuleLoader__.load({
       "mkt.sending": "Installing",
       "mkt.install": "Install",
       "mkt.installed": "Installed",
-      "mkt.sent": "Installed {name}. Restart dsh web to apply.",
+      "mkt.sent": "Installed {name}. Restart DeepSeek Harness to apply.",
       "mkt.progressHint": "First installs download and resolve dependencies — large plugins can take 1–3 minutes",
       "mkt.phaseResolving": "Resolving dependencies",
       "mkt.phaseDownloading": "Downloading",
       "mkt.phaseLinking": "Linking",
       "mkt.phaseBuilding": "Running build scripts",
       "mkt.packagesDone": "Processed {n} packages",
-      "mkt.restartBanner": "Installed {name} — restart dsh web to apply",
-      "mkt.uninstallRestartBanner": "Uninstalled {name} — restart dsh web to finish removing it",
+      "mkt.restartBanner": "Installed {name} — restart DeepSeek Harness to apply",
+      "mkt.uninstallRestartBanner": "Uninstalled {name} — restart DeepSeek Harness to finish removing it",
       "mkt.restartNow": "Restart now",
+      "mkt.manualRestart": "Quit and reopen DeepSeek Harness to apply plugin changes.",
       "mkt.restarting": "Restarting…",
       "mkt.restartFail": "Restart failed: {m}",
-      "mkt.restartTimeout": "Timed out waiting for DeepSeek Harness — restart dsh web yourself",
+      "mkt.restartTimeout": "Timed out waiting for DeepSeek Harness — restart DeepSeek Harness yourself",
       "mkt.more": "Load more",
       "mkt.moreLeft": "{n} remaining",
       "mkt.moreLoading": "Loading…",
       "mkt.catAll": "All",
       "mkt.searching": "Searching “{q}”…",
       "mkt.switching": "Switching category…",
-      "plaza.title": "Plugin Plaza",
-      "plaza.skills": "Skills",
-      "plaza.plugins": "Plugins",
-      "plaza.noSession": "Open a session first",
-      "plaza.back": "Back to chat",
+      "plaza.title": "Skill Plaza",
+      "tail.moved": "{n} cards shown below the reply",
       "plg.hint": "Found {n} plugins · click a card for details and install",
       "plg.queued": "Another plugin is installing — please wait",
       "plg.retry": "Retry",
       "plg.failed": "Install failed: {m}",
       "plg.sourceTitle": "Install source (install-plan checks: pinned commit · repo match · no --force)",
-      "plg.installedHint": "Installed · restart dsh web to apply",
+      "plg.installedHint": "Installed · restart DeepSeek Harness to apply",
       "scope.all": "All",
       "scope.installed": "Installed",
       "meta.files": "{n} files",
@@ -658,7 +647,7 @@ window.__ModuleLoader__.load({
       "stat.size": "Total size",
       "stat.updated": "Updated",
       "inst.error": "Failed to read local skills: {m}",
-      "ip.empty": "No dsh plugins installed in the web profile",
+      "ip.empty": "No DSH plugins installed in the current profile",
       "ip.error": "Failed to read local plugins: {m}",
       "ip.tab.overview": "Overview",
       "ip.tab.readme": "README",
@@ -728,18 +717,30 @@ window.__ModuleLoader__.load({
     ];
 
     async function api(method, payload) {
-      const res = await fetch(pluginUrl(""), {
+      // Use the authenticated shell/worker carrier when supplied, matching DSH's
+      // RPC client. Desktop otherwise forwards dsh-app://app routes to its Host;
+      // fetching the loopback HTTP URL directly would lose the shell-owned cookie.
+      const transport = globalThis.__DSH_TRANSPORT__;
+      const init = {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ method, ...payload }),
-      });
+      };
+      const res = typeof transport?.fetch === "function"
+        ? await transport.fetch("skillhub", init)
+        : await fetch(pluginUrl(""), init);
       const body = await res.json().catch(() => ({}));
       if (!res.ok || body.ok === false) throw new Error(body.error || "HTTP " + res.status);
       return body;
     }
 
     // 同源一键重启（广场与聊天卡片共用）：调 pluginRestart，等待 BOOT_ID 变化后整页刷新。
+    function canRestartHost() {
+      return typeof document !== "undefined" && /^https?:/.test(document.baseURI);
+    }
+
     function pluginRestartFlow(tr, previousBoot, onBusy, onMessage) {
+      if (!canRestartHost()) { onBusy(false); onMessage(tr("mkt.manualRestart")); return; }
       const deadline = Date.now() + 60000;
       const awaitNewBoot = () => {
         const poll = () => {
@@ -1209,7 +1210,10 @@ window.__ModuleLoader__.load({
       const block = props?.block;
       const raw = (block && "kind" in block ? block.call?.argsRaw : block?.argsRaw) || "";
       if (!raw || typeof raw !== "string") return {};
-      try { return JSON.parse(raw); } catch { return {}; }
+      try {
+        const args = JSON.parse(raw);
+        return args && typeof args === "object" && !Array.isArray(args) ? args : {};
+      } catch { return {}; }
     }
 
     function contentText(node) {
@@ -1224,57 +1228,78 @@ window.__ModuleLoader__.load({
     }
 
     function pickPayload(props) {
-      const found = [];
-      const visit = (node, depth) => {
-        if (!node || depth > 6) return;
+      const seen = new Set();
+      const visit = (node, depth = 0) => {
+        if (!node || depth > 8) return null;
         if (typeof node === "string") {
-          const t = node.trim();
-          if ((t.startsWith("{") || t.startsWith("[")) && t.length > 8) {
-            try { visit(JSON.parse(t), depth + 1); } catch { /* ignore */ }
+          const text = node.trim();
+          if (text.startsWith("{") || text.startsWith("[")) {
+            try { return visit(JSON.parse(text), depth + 1); } catch { /* plain result text */ }
           }
-          return;
+          return null;
         }
-        if (typeof node !== "object") return;
-        if (Array.isArray(node)) {
-          for (const x of node) visit(x, depth + 1);
-          return;
+        if (typeof node !== "object" || seen.has(node)) return null;
+        seen.add(node);
+        if (Array.isArray(node.items)) return node;
+        const values = Array.isArray(node) ? node :
+          ["meta", "content", "text", "resultView", "result", "view", "data", "value", "payload", "message"]
+            .map((key) => node[key]);
+        for (const value of values) {
+          const found = visit(value, depth + 1);
+          if (found) return found;
         }
-        if (Array.isArray(node.items)) found.push(node);
-        for (const key of ["block", "meta", "result", "resultView", "view", "data", "value", "payload", "content", "message"]) {
-          if (node[key] != null) visit(node[key], depth + 1);
-        }
+        return null;
       };
-      visit(props, 0);
+      // DSH persists output.presentationMeta on tool/result and PTC block.meta.
+      // This first-party field is independent of Host presentCall/presentResult.
+      // Recorded empty results are authoritative too; do not rerun their search.
+      return visit(props?.block) || visit(props);
+    }
+
+    function useToolItems(props, method) {
       const block = props?.block;
-      visit(block?.meta, 1);
-      visit(block?.content, 1);
-      visit(block?.resultView, 1);
-      visit(contentText(block?.content), 1);
-      return found.find((x) => Array.isArray(x.items) && x.items.length) || found[0] || null;
+      const payload = React.useMemo(() => pickPayload(props), [block, props?.meta, props?.content, props?.resultView]);
+      const args = parseToolArgs(props);
+      const request = JSON.stringify(args);
+      const fromTool = Array.isArray(payload?.items) ? payload.items : null;
+      const running = props?.phase === "preparing" || props?.phase === "start"
+        || (props?.phase !== "result" && !!block && !("kind" in block));
+      const failure = block?.isError
+        ? contentText(block.content).trim() || block.error?.reason || block.error?.code || "Unknown error"
+        : "";
+      const [items, setItems] = useState(fromTool || []);
+      const [loaded, setLoaded] = useState(null);
+      const [err, setErr] = useState("");
+      useEffect(() => {
+        setItems(fromTool || []);
+        setErr("");
+        if (fromTool || running || failure) return;
+        let live = true;
+        const query = String(args.query || "").trim();
+        // Keep the wire offset/limit; the Host owns defaults and page-local skip.
+        const params = { ...args, query };
+        api(method, params)
+          .then((data) => { if (live) { setItems(data.items || []); setLoaded(block); } })
+          .catch((error) => { if (live) { setItems([]); setErr(error.message || String(error)); setLoaded(block); } });
+        return () => { live = false; };
+      }, [block, request, method, fromTool, running, failure]);
+      return { payload, items, setItems, running, err: failure || err, loading: !fromTool && !failure && loaded !== block };
+    }
+
+    function ToolState({ running, loading, err, empty, t }) {
+      const tr = typeof t === "function" ? t : lookup;
+      return h("div", { className: "sh-root sh-tool", role: err ? "alert" : "status" },
+        h("p", { className: err ? "sh-err" : "sh-hint" },
+          err ? tr("tool.failed", { m: err }) : running || loading ? tr("loading") : tr(empty)),
+      );
     }
 
     function SearchToolView(props) {
       useEffect(() => ensureCss(), []);
-      const payload = pickPayload(props);
-      const args = parseToolArgs(props);
-      const query = String(payload?.query || args.query || "").trim();
-      const fromTool = Array.isArray(payload?.items) && payload.items.length ? payload.items : null;
-      const running = !!(props?.block && !("kind" in props.block));
-      const [items, setItems] = useState(fromTool || []);
-      const [err, setErr] = useState("");
+      const state = useToolItems(props, "search");
+      const { items, setItems } = state;
       const [open, setOpen] = useState(null);
-      useEffect(() => {
-        if (fromTool) setItems(fromTool);
-      }, [fromTool]);
-      useEffect(() => {
-        if (fromTool || running) return;
-        let live = true;
-        api("search", { query, queries: args.queries, category: args.category, offset: args.offset, limit: args.limit })
-          .then((d) => { if (live) setItems(d.items || []); })
-          .catch((e) => { if (live) { setItems([]); setErr(e.message || String(e)); } });
-        return () => { live = false; };
-      }, [query, running, !!fromTool]);
-      if (running || !items.length) return err ? h("div", { className: "sh-err" }, err) : null;
+      if (state.running || state.loading || state.err || !items.length) return h(ToolState, { ...state, empty: "search.empty", t: props.t });
       const mark = (item, installed) => {
         setItems((cur) => cur.map((it) => it.slug === item.slug ? { ...it, installed } : it));
         setOpen((cur) => cur && cur.slug === item.slug ? { ...cur, installed } : cur);
@@ -1296,15 +1321,12 @@ window.__ModuleLoader__.load({
 
     function ListToolView(props) {
       useEffect(() => ensureCss(), []);
-      const payload = pickPayload(props);
-      const fromTool = Array.isArray(payload?.items) ? payload.items : null;
+      const state = useToolItems(props, "list");
+      const { items, setItems, payload } = state;
       const skillsDir = payload?.skillsDir || "";
-      const running = !!(props?.block && !("kind" in props.block));
-      const [items, setItems] = useState(fromTool || []);
       const [open, setOpen] = useState(null);
       const [toast, setToast] = useState("");
-      useEffect(() => { if (fromTool) setItems(fromTool); }, [fromTool]);
-      if (running) return null;
+      if (state.running || state.loading || state.err) return h(ToolState, { ...state, empty: "installed.none", t: props.t });
       const tr = typeof props.t === "function" ? props.t : lookup;
       const dropItem = (it) => setItems((cur) => cur.filter((x) => x.slug !== it.slug));
       return h(I18nProvider, { t: tr },
@@ -1368,6 +1390,7 @@ window.__ModuleLoader__.load({
       return {
         apiBase: "https://api.skillhub.cn",
         skillsDir: "",
+        profile: "",
         maxResults: 12,
         timeoutMs: 20000,
         sortBy: "score",
@@ -1381,6 +1404,7 @@ window.__ModuleLoader__.load({
       const [saved, setSaved] = useState(emptyDraft);
       const [draft, setDraft] = useState(emptyDraft);
       const [saving, setSaving] = useState(false);
+      const [activeProfile, setActiveProfile] = useState("");
       const [updateInfo, setUpdateInfo] = useState(null);
       const [err, setErr] = useState("");
       useEffect(() => {
@@ -1391,10 +1415,12 @@ window.__ModuleLoader__.load({
             const next = {
               apiBase: d.apiBase || "https://api.skillhub.cn",
               skillsDir: d.skillsDir || "",
+              profile: d.profile || "",
               maxResults: d.maxResults || 12,
               timeoutMs: d.timeoutMs || 20000,
               sortBy: d.sortBy || "score",
             };
+            setActiveProfile(d.activeProfile || "");
             setSaved(next);
             setDraft(next);
           })
@@ -1414,10 +1440,12 @@ window.__ModuleLoader__.load({
           const next = {
             apiBase: d.apiBase,
             skillsDir: d.skillsDir,
+            profile: d.profile || "",
             maxResults: d.maxResults,
             timeoutMs: d.timeoutMs,
             sortBy: d.sortBy,
           };
+          setActiveProfile(d.activeProfile || "");
           setSaved(next);
           setDraft(next);
         } catch (e) {
@@ -1471,6 +1499,17 @@ window.__ModuleLoader__.load({
                 onChange: (e) => setDraft({ ...draft, skillsDir: e.target.value }),
               }),
             ),
+            h("div", { className: "sh-cfg-f" },
+              h("label", { htmlFor: "sh-profile" }, tr("cfg.profile")),
+              h("input", {
+                id: "sh-profile",
+                type: "text",
+                value: draft.profile,
+                placeholder: activeProfile,
+                onChange: (e) => setDraft({ ...draft, profile: e.target.value }),
+              }),
+            ),
+            activeProfile ? h("p", { className: "sh-hint" }, tr("cfg.activeProfile", { name: activeProfile })) : null,
             h("div", { className: "sh-cfg-f" },
               h("label", { htmlFor: "sh-max" }, tr("cfg.max")),
               h("input", {
@@ -1976,271 +2015,18 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function Marketplace(props) {
-      useEffect(() => ensureCss(), []);
-      const tr = typeof props.t === "function" ? props.t : lookup;
-      const locale = tr("locale") === "en" ? "en" : "zh";
-      const [query, setQuery] = useState("");
-      const [submitted, setSubmitted] = useState("");
-      const [category, setCategory] = useState("");
-      const [page, setPage] = useState(1);
-      const [items, setItems] = useState([]);
-      const [total, setTotal] = useState(0);
-      const [status, setStatus] = useState("loading");
-      const [err, setErr] = useState("");
-      // reason 记录本次加载的触发来源:init 进入 / search 搜索 / cat 切分类 / more 加载更多
-      const [reason, setReason] = useState("init");
-      const [loadingMore, setLoadingMore] = useState(false);
-      const [sending, setSending] = useState("");
-      const [feedback, setFeedback] = useState("");
-      const [cats, setCats] = useState(MARKET_CAT_FALLBACK);
-      const [bootId, setBootId] = useState("");
-      const [liveStatus, setLiveStatus] = useState(null);
-      const [pendingRestart, setPendingRestart] = useState("");
-      const [restartKind, setRestartKind] = useState("install");
-      const [restarting, setRestarting] = useState(false);
-      const [scope, setScope] = useState("all");
-      const [installedCount, setInstalledCount] = useState(null);
-      const install = installMarketPlugin;
-      const loadInstalledCount = () => {
-        api("installedPlugins", {})
-          .then((d) => setInstalledCount((d.items || []).length))
-          .catch(() => {});
-      };
-      useEffect(() => {
-        let live = true;
-        api("pluginCategories", {})
-          .then((d) => {
-            if (!live) return;
-            const items = Array.isArray(d.items) ? d.items.filter((it) => it && it.key) : [];
-            if (items.length) setCats(items);
-          })
-          .catch(() => {});
-        api("pluginInstallStatus", {}).then((d) => {
-          if (!live) return;
-          if (d.boot) setBootId(d.boot);
-        }).catch(() => {});
-        return () => { live = false; };
-      }, []);
-      // 切换分段时刷新已安装计数
-      useEffect(() => { loadInstalledCount(); }, [scope]);
-      useEffect(() => {
-        if (scope !== "all") return;
-        let live = true;
-        if (page === 1) setStatus("loading");
-        api("plugins", { q: submitted, scope: "verified", category, sort: "stars", page, pageSize: 48 })
-          .then((d) => {
-            if (!live) return;
-            setItems((cur) => page === 1 ? (d.items || []) : cur.concat(d.items || []));
-            setTotal(Number(d.total) || 0);
-            setStatus("ready");
-            setErr("");
-            setLoadingMore(false);
-          })
-          .catch((e) => {
-            if (!live) return;
-            if (page === 1) {
-              setItems([]);
-              setTotal(0);
-            }
-            setStatus("error");
-            setErr(e.message || String(e));
-            setLoadingMore(false);
-          });
-        return () => { live = false; };
-      }, [submitted, category, page, scope]);
-      useEffect(() => {
-        if (!sending && !restarting) return;
-        let live = true;
-        const tick = () => {
-          api("pluginInstallStatus", {}).then((d) => {
-            if (!live) return;
-            setLiveStatus(d);
-            if (d.boot) setBootId((cur) => cur || d.boot);
-          }).catch(() => {});
-        };
-        tick();
-        const timer = setInterval(tick, 800);
-        return () => { live = false; clearInterval(timer); };
-      }, [sending, restarting]);
-      const catLabelFor = (key) => {
-        if (!key) return "";
-        if (locale === "en" && MARKET_CAT_EN[key]) return MARKET_CAT_EN[key];
-        const hit = cats.find((it) => it.key === key);
-        return (hit && hit.displayName) || MARKET_CAT_FALLBACK.find((it) => it.key === key)?.displayName || key;
-      };
-      const detailHref = (plugin) => {
-        const repo = String(plugin.repositoryUrl || "").trim();
-        if (/^https:\/\/github\.com\//i.test(repo)) return repo;
-        return "https://github.com/" + encodeURIComponent(plugin.owner) + "/" + encodeURIComponent(plugin.name);
-      };
-      const pct = sending ? progressPercent(liveStatus) : null;
-      // 列表加载中(进入/搜索/切分类):搜索按钮与分类按钮禁用防重
-      const listBusy = status === "loading";
-      const searching = listBusy && reason === "search";
-      const skeleton = listBusy && reason !== "search";
-      const startRestart = () => {
-        if (restarting) return;
-        setRestarting(true);
-        setFeedback("");
-        pluginRestartFlow(tr, bootId, setRestarting, setFeedback);
-      };
-      return h(I18nProvider, { t: tr },
-        h("div", { className: "sh-mkt" },
-          h(ScopeSeg, { scope, onChange: (v) => { setScope(v); setPage(1); }, count: installedCount }),
-          pendingRestart && !sending ? h("div", { className: "sh-mkt-banner" },
-            h("span", { className: "sh-mkt-banner-text" }, tr(restartKind === "uninstall" ? "mkt.uninstallRestartBanner" : "mkt.restartBanner", { name: pendingRestart })),
-            h("button", {
-              type: "button",
-              className: "sh-mkt-restart",
-              disabled: restarting,
-              onClick: startRestart,
-            }, restarting ? tr("mkt.restarting") : tr("mkt.restartNow")),
-          ) : null,
-          scope === "installed" ? h(InstalledPluginsView, {
-            t: tr,
-            onChanged: loadInstalledCount,
-            onNeedRestart: (name) => { setRestartKind("uninstall"); setPendingRestart(name); },
-          }) : h(React.Fragment, null,
-          h("form", {
-            className: "sh-mkt-search",
-            onSubmit: (e) => {
-              e.preventDefault();
-              if (listBusy) return;
-              setReason("search");
-              setSubmitted(query.trim());
-              setPage(1);
-            },
-          },
-            h("div", { className: "sh-mkt-field" },
-              h(SearchIcon),
-              h("input", {
-                type: "search",
-                value: query,
-                placeholder: tr("mkt.searchPlaceholder"),
-                onChange: (e) => setQuery(e.currentTarget.value),
-              }),
-            ),
-            h("button", { type: "submit", className: "sh-mkt-go", disabled: listBusy }, listBusy ? h(Spinner) : null, tr("mkt.search")),
-          ),
-          h("div", { className: "sh-mkt-filters" },
-            h("button", {
-              type: "button",
-              className: "sh-mkt-filter" + (!category ? " on" : ""),
-              disabled: listBusy,
-              onClick: () => { setReason("cat"); setCategory(""); setPage(1); },
-            }, tr("mkt.catAll")),
-            cats.map((it) => h("button", {
-              key: it.key,
-              type: "button",
-              className: "sh-mkt-filter" + (category === it.key ? " on" : ""),
-              disabled: listBusy,
-              onClick: () => { setReason("cat"); setCategory(it.key); setPage(1); },
-            }, catLabelFor(it.key))),
-          ),
-          status === "ready" ? h("div", { className: "sh-mkt-results" },
-            h("p", { className: "sh-mkt-summary" }, tr("mkt.repos", { n: total })),
-          ) : null,
-          sending ? h("div", { className: "sh-mkt-progress" },
-            h("div", { className: "sh-mkt-progress-row" },
-              h("span", { className: "sh-mkt-progress-text" }, progressCopy(liveStatus, tr)),
-              pct != null ? h("span", { className: "sh-mkt-progress-pct" }, pct + "%") : null,
-            ),
-            h("div", { className: "sh-mkt-bar" },
-              h("div", {
-                className: "sh-mkt-bar-fill" + (pct == null ? " wave" : ""),
-                style: pct != null ? { width: pct + "%" } : undefined,
-              }),
-            ),
-          ) : null,
-          feedback ? h("p", { className: "sh-mkt-status", style: { padding: "0 2px", textAlign: "left" } }, feedback) : null,
-          searching ? h(LoadingStatus, { text: tr("mkt.searching", { q: submitted }) }) : null,
-          skeleton ? h("div", { className: "sh-mkt-results" },
-            reason === "cat" ? h("p", { className: "sh-mkt-summary" }, tr("mkt.switching")) : null,
-          ) : null,
-          skeleton ? h(SkeletonCards, { count: 4 }) : null,
-          status === "error" ? h("p", { className: "sh-mkt-status" }, tr("mkt.error", { m: err })) : null,
-          status === "ready" && !items.length ? h("p", { className: "sh-mkt-status" }, tr("mkt.empty")) : null,
-          items.length && !searching && !skeleton ? h("div", { className: "sh-mkt-grid" },
-            items.map((plugin) => {
-              const id = plugin.fullName || (plugin.owner + "/" + plugin.name);
-              const verified = plugin.installability === "verified";
-              const installed = !!plugin.installed;
-              const busy = !!sending;
-              return h("article", { key: id, className: "sh-mkt-card" + (installed ? " on" : "") },
-                h("div", { className: "sh-mkt-head" },
-                  h(MarketAvatar, { plugin }),
-                  h("div", { className: "sh-mkt-head-main" },
-                    h("div", { className: "sh-mkt-top" },
-                      h("p", { className: "sh-mkt-owner" }, plugin.owner),
-                      h("span", { className: "sh-mkt-badge" + (installed ? " on" : verified ? " ok" : "") },
-                        installed ? tr("mkt.installed") : (verified ? tr("mkt.verified") : tr("mkt.unsupported"))),
-                    ),
-                    h("div", { className: "sh-mkt-name" }, plugin.name),
-                  ),
-                ),
-                h("p", { className: "sh-mkt-desc" }, plugin.description || tr("mkt.noDesc")),
-                h("div", { className: "sh-mkt-meta" },
-                  h("span", null, catLabelFor(plugin.categoryKey) || plugin.categoryKey),
-                  h("span", null, "★ " + (Number(plugin.stars) || 0)),
-                ),
-                h("div", { className: "sh-mkt-actions" },
-                  h("a", { className: "sh-mkt-details", href: detailHref(plugin), target: "_blank", rel: "noreferrer" }, tr("mkt.details")),
-                  h("button", {
-                    type: "button",
-                    className: "sh-mkt-install" + (installed ? " done" : ""),
-                    disabled: !verified || busy || restarting || installed,
-                    onClick: () => {
-                      setSending(id);
-                      setFeedback("");
-                      setPendingRestart("");
-                      setLiveStatus(null);
-                      install(plugin).then(
-                        () => {
-                          setItems((cur) => cur.map((it) => {
-                            const iid = it.fullName || (it.owner + "/" + it.name);
-                            return iid === id ? { ...it, installed: true } : it;
-                          }));
-                          setRestartKind("install");
-                          setPendingRestart(plugin.fullName || id);
-                          loadInstalledCount();
-                        },
-                        (e) => setFeedback(e.message || String(e)),
-                      ).finally(() => setSending(""));
-                    },
-                  }, !verified ? tr("mkt.unsupported") : installed ? tr("mkt.installed") : (sending === id ? tr("mkt.sending") : tr("mkt.install"))),
-                ),
-              );
-            }),
-          ) : null,
-          status === "ready" && items.length < total ? h("button", {
-            type: "button",
-            className: "sh-mkt-more",
-            disabled: loadingMore,
-            onClick: () => { if (loadingMore) return; setReason("more"); setLoadingMore(true); setPage((n) => n + 1); },
-          },
-            loadingMore ? h(Spinner) : null,
-            h("span", null, loadingMore ? tr("mkt.moreLoading") : tr("mkt.more")),
-            loadingMore ? null : h("span", { className: "sh-mkt-more-left" }, tr("mkt.moreLeft", { n: Math.max(0, total - items.length) })),
-            loadingMore ? null : h(ChevronDown),
-          ) : null,
-          ),
-        ),
-      );
-    }
-
     const SKILL_CAT_KEYS = [
       "office-efficiency", "content-creation", "dev-programming", "data-analysis",
       "design-media", "ai-agent", "knowledge-management", "business-ops",
       "education", "professional", "it-ops-security", "life-service",
     ];
 
-    function PlazaIcon() {
-      return h("svg", { viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" },
-        h("rect", { x: "1.75", y: "1.75", width: "5.5", height: "5.5", rx: "1.2", stroke: "currentColor", strokeWidth: "1.4" }),
-        h("rect", { x: "8.75", y: "1.75", width: "5.5", height: "5.5", rx: "1.2", stroke: "currentColor", strokeWidth: "1.4" }),
-        h("rect", { x: "1.75", y: "8.75", width: "5.5", height: "5.5", rx: "1.2", stroke: "currentColor", strokeWidth: "1.4" }),
-        h("rect", { x: "8.75", y: "8.75", width: "5.5", height: "5.5", rx: "1.2", stroke: "currentColor", strokeWidth: "1.4" }),
+    function PlazaIcon({ size } = {}) {
+      return h("svg", {
+        viewBox: "0 0 24 24", width: size || 16, height: size || 16, fill: "none", "aria-hidden": "true",
+        stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round",
+      },
+        h("path", { d: "M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z" }),
       );
     }
 
@@ -2435,6 +2221,7 @@ window.__ModuleLoader__.load({
 
     function PluginDrawer({ plugin, tr, restarting, onClose, onInstall, onRestart }) {
       const [source, setSource] = useState("");
+      const [profile, setProfile] = useState("");
       const [repoHint, setRepoHint] = useState("");
       useEffect(() => {
         let live = true;
@@ -2442,6 +2229,7 @@ window.__ModuleLoader__.load({
           .then((d) => {
             if (!live) return;
             setSource(d.source || "");
+            setProfile(d.profile || "");
             setRepoHint(d.repositoryUrl || "");
           })
           .catch(() => {});
@@ -2474,12 +2262,12 @@ window.__ModuleLoader__.load({
             ),
             h("p", { className: "sh-overview" }, plugin.description || tr("mkt.noDesc")),
             source ? h("p", { className: "sh-hint", style: { margin: "14px 0 6px" } }, tr("plg.sourceTitle")) : null,
-            source ? h("div", { className: "sh-mono" }, "dsh plugin --profile web add " + source) : null,
+            source && profile ? h("div", { className: "sh-mono" }, "dsh plugin --profile " + JSON.stringify(profile) + " add " + source) : null,
           ),
           h("div", { className: "sh-foot" },
             installed ? h("span", { className: "sh-hint", style: { margin: "0 auto 0 0" } }, tr("plg.installedHint")) : null,
             !installed && !verified ? h("span", { className: "sh-hint", style: { margin: "0 auto 0 0" } }, tr("mkt.unsupported")) : null,
-            installed ? h("button", {
+            installed && canRestartHost() ? h("button", {
               type: "button",
               className: "sh-mini primary",
               disabled: restarting,
@@ -2499,14 +2287,9 @@ window.__ModuleLoader__.load({
     // 聊天流插件卡片视图（key=skillhub_plugin_search）：卡片、就地安装进度、重启横幅、详情弹窗。
     function PluginSearchToolView(props) {
       useEffect(() => ensureCss(), []);
-      const payload = pickPayload(props);
-      const args = parseToolArgs(props);
-      const query = String(payload?.query || args.query || "").trim();
-      const fromTool = Array.isArray(payload?.items) && payload.items.length ? payload.items : null;
-      const running = !!(props?.block && !("kind" in props.block));
+      const state = useToolItems(props, "pluginSearch");
+      const { items, setItems } = state;
       const tr0 = typeof props.t === "function" ? props.t : lookup;
-      const [items, setItems] = useState(fromTool || []);
-      const [err, setErr] = useState("");
       const [open, setOpen] = useState(null);
       const [toast, setToast] = useState("");
       const [busyId, setBusyId] = useState("");
@@ -2515,33 +2298,27 @@ window.__ModuleLoader__.load({
       const [pendingRestart, setPendingRestart] = useState("");
       const [restarting, setRestarting] = useState(false);
       const [bootId, setBootId] = useState("");
+      const recorded = state.payload?.items;
+      const refs = React.useMemo(() => Array.isArray(recorded) ? recorded.map((item) => ({
+        owner: item.owner, name: item.name, repositoryUrl: item.repositoryUrl,
+      })) : null, [recorded]);
       useEffect(() => {
-        if (fromTool) setItems(fromTool);
-      }, [fromTool]);
-      useEffect(() => {
-        if (running) return;
+        if (!refs?.length || state.running || state.err || busyId || pendingRestart) return;
         let live = true;
-        const limit = Number(args.limit) > 0 ? Number(args.limit) : 12;
-        const page = Math.floor((Number(args.offset) || 0) / limit) + 1;
-        api("plugins", { q: query, sort: "stars", page, pageSize: limit })
-          .then((d) => {
-            if (!live) return;
-            const fresh = d.items || [];
-            if (fromTool) {
-              // 历史工具结果只合并最新 installed 标志(重启后新装的插件也能显示徽标),保留当时的卡片内容
-              const mark = new Map(fresh.map((it) => [it.fullName || it.owner + "/" + it.name, !!it.installed]));
-              setItems((cur) => cur.map((it) => {
-                const key = it.fullName || it.owner + "/" + it.name;
-                return mark.has(key) ? { ...it, installed: mark.get(key) } : it;
-              }));
-            } else {
-              setItems(fresh);
-              setErr("");
-            }
+        api("pluginInstalled", { plugins: refs })
+          .then((data) => {
+            if (!live || !Array.isArray(data.items)) return;
+            const marks = new Map(data.items.map((item) => [item.fullName.toLowerCase(), !!item.installed]));
+            const mark = (item) => {
+              const key = (item.owner + "/" + item.name).toLowerCase();
+              return marks.has(key) ? { ...item, installed: marks.get(key) } : item;
+            };
+            setItems((current) => current.map(mark));
+            setOpen((current) => current ? mark(current) : current);
           })
-          .catch((e) => { if (live && !fromTool) { setItems([]); setErr(e.message || String(e)); } });
+          .catch(() => {}); // Offline/local-state failures must not hide replayed cards.
         return () => { live = false; };
-      }, [query, running, !!fromTool]);
+      }, [refs, state.running, state.err, busyId, pendingRestart]);
       useEffect(() => {
         if (bootId) return;
         let live = true;
@@ -2591,7 +2368,7 @@ window.__ModuleLoader__.load({
         setToast("");
         pluginRestartFlow(tr0, bootId, (v) => setRestarting(v), setToast);
       };
-      if (running || !items.length) return err ? h("div", { className: "sh-err" }, err) : null;
+      if (state.running || state.loading || state.err || !items.length) return h(ToolState, { ...state, empty: "mkt.empty", t: props.t });
       const pct = busyId ? progressPercent(status) : null;
       const phase = busyId ? progressCopy(status, tr0) : "";
       return h(I18nProvider, { t: tr0 },
@@ -2616,12 +2393,12 @@ window.__ModuleLoader__.load({
           ),
           pendingRestart && !busyId ? h("div", { className: "sh-plg-banner" },
             h("span", null, "✅ " + tr0("mkt.restartBanner", { name: pendingRestart })),
-            h("button", {
+            canRestartHost() ? h("button", {
               type: "button",
               className: "sh-mini primary",
               disabled: restarting,
               onClick: startRestart,
-            }, restarting ? tr0("mkt.restarting") : tr0("mkt.restartNow")),
+            }, restarting ? tr0("mkt.restarting") : tr0("mkt.restartNow")) : h("span", { className: "sh-hint" }, tr0("mkt.manualRestart")),
           ) : null,
           open ? h(PluginDrawer, {
             plugin: open,
@@ -2636,179 +2413,98 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function conversationRoot() {
-      return typeof document === "undefined" ? null : document.querySelector("[data-phase]");
-    }
+    const PLAZA_PANEL_ID = "skillhub-plaza";
 
-    function conversationBox() {
-      const el = conversationRoot();
-      if (!el) return null;
-      const r = el.getBoundingClientRect();
-      return { top: r.top, left: r.left, width: r.width, height: r.height };
-    }
-
-    function useConversationBox(active) {
-      const [box, setBox] = useState(null);
-      const layout = React.useLayoutEffect || useEffect;
-      layout(() => {
-        if (!active) {
-          setBox(null);
-          return;
-        }
-        const update = () => setBox(conversationBox());
-        update();
-        const root = conversationRoot();
-        const ro = root && typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
-        if (root && ro) ro.observe(root);
-        window.addEventListener("resize", update);
-        window.addEventListener("scroll", update, true);
-        return () => {
-          if (ro) ro.disconnect();
-          window.removeEventListener("resize", update);
-          window.removeEventListener("scroll", update, true);
-        };
-      }, [active]);
-      return box;
-    }
-
-    function PlazaView({ t, onClose, box }) {
-      useEffect(() => {
-        ensureCss();
-        const onKey = (e) => {
-          if (e.key !== "Escape") return;
-          e.preventDefault();
-          onClose();
-        };
-        window.addEventListener("keydown", onKey);
-        return () => window.removeEventListener("keydown", onKey);
-      }, [onClose]);
-      const tr = typeof t === "function" ? t : lookup;
-      const [tab, setTab] = useState("plugins");
-      return h(I18nProvider, { t: tr },
-        h("div", {
-          className: "sh-plaza-page",
-          role: "dialog",
-          "aria-modal": "false",
-          "aria-label": tr("plaza.title"),
-          style: {
-            top: box.top,
-            left: box.left,
-            width: box.width,
-            height: box.height,
-          },
-        },
-          h("div", { className: "sh-plaza-top" },
-            h("div", { className: "sh-plaza-tabs", role: "tablist" },
-              h("button", {
-                type: "button",
-                role: "tab",
-                className: "sh-plaza-tab" + (tab === "plugins" ? " on" : ""),
-                "aria-selected": tab === "plugins",
-                onClick: () => setTab("plugins"),
-              }, tr("plaza.plugins")),
-              h("button", {
-                type: "button",
-                role: "tab",
-                className: "sh-plaza-tab" + (tab === "skills" ? " on" : ""),
-                "aria-selected": tab === "skills",
-                onClick: () => setTab("skills"),
-              }, tr("plaza.skills")),
-            ),
-            h("button", {
-              type: "button",
-              className: "sh-plaza-close",
-              onClick: onClose,
-              "aria-label": tr("plaza.back"),
-              title: tr("plaza.back"),
-            }, "×"),
-          ),
-          h("div", { className: "sh-plaza-body" },
-            tab === "skills" ? h(SkillPlaza) : h(Marketplace, { t: tr }),
-          ),
-        ),
-      );
-    }
-
-    function sessionListCurrent(sessions) {
-      try {
-        return sessions && sessions.list && typeof sessions.list.getSnapshot === "function"
-          ? sessions.list.getSnapshot().current
-          : undefined;
-      } catch {
-        return undefined;
-      }
-    }
-
-    function PlazaAction({ wide, sessions, t }) {
+    function SkillPlazaPage({ t }) {
       useEffect(() => ensureCss(), []);
       const tr = typeof t === "function" ? t : lookup;
-      const [open, setOpen] = useState(false);
-      const [hint, setHint] = useState("");
-      const close = React.useCallback(() => setOpen(false), []);
-      const box = useConversationBox(open);
-      useEffect(() => {
-        if (!open) return;
-        if (conversationRoot()) return;
-        setOpen(false);
-        setHint(tr("plaza.noSession"));
-      }, [open, box, tr]);
-      useEffect(() => {
-        if (!open) return;
-        const list = sessions && sessions.list;
-        if (!list || typeof list.subscribe !== "function") return;
-        let last = sessionListCurrent(sessions);
-        return list.subscribe(() => {
-          const now = sessionListCurrent(sessions);
-          if (now === last) return;
-          last = now;
-          close();
-        });
-      }, [open, sessions, close]);
-      useEffect(() => {
-        if (!open) return;
-        const onPointer = (e) => {
-          const node = e.target;
-          if (!node || typeof node.closest !== "function") return;
-          if (node.closest(".sh-plaza-page, .sh-plaza-wrap, .sh-overlay")) return;
-          close();
-        };
-        document.addEventListener("pointerdown", onPointer, true);
-        return () => document.removeEventListener("pointerdown", onPointer, true);
-      }, [open, close]);
-      const panel = open && box && typeof document !== "undefined"
-        ? createPortal(h(PlazaView, { t: tr, onClose: close, box }), document.body)
-        : null;
       return h(I18nProvider, { t: tr },
-        h("div", { className: "sh-plaza-wrap" + (wide ? "" : " rail") },
-          h("button", {
-            type: "button",
-            className: "sh-plaza-trigger" + (open ? " on" : ""),
-            "aria-label": tr("plaza.title"),
-            "aria-expanded": open,
-            onClick: () => {
-              if (open) {
-                close();
-                setHint("");
-                return;
-              }
-              if (!conversationBox()) {
-                setHint(tr("plaza.noSession"));
-                return;
-              }
-              setOpen(true);
-              setHint("");
-            },
-          },
-            h(PlazaIcon),
-            wide ? h("span", null, tr("plaza.title")) : null,
-          ),
-          hint ? h(Toast, { text: hint, onDone: () => setHint("") }) : null,
-          panel,
+        h("div", { className: "sh-plaza-panel", role: "region", "aria-label": tr("plaza.title") },
+          h("div", { className: "sh-plaza-top" }, h("div", { className: "sh-plaza-heading" }, tr("plaza.title"))),
+          h("div", { className: "sh-plaza-body" }, h(SkillPlaza)),
         ),
       );
     }
 
-    const inject = ["slots", "sessions"];
+    // 卡片类工具的结果按轮次收集，渲染在 conversation.chat.turnTail（回复下方、折叠区之外）。
+    const TURN_CARDS_KEY = "skillhub-cards";
+    const TURN_CARD_VIEWS = {
+      skillhub_search: SearchToolView,
+      skillhub_list: ListToolView,
+      skillhub_plugin_search: PluginSearchToolView,
+    };
+
+    const skillhubTurnDefinition = {
+      kind: TURN_CARDS_KEY,
+      match: (event) => {
+        if (event.type === "turn/start") return { id: String(event.data.turn), role: "start" };
+        if (event.type === "tool/call") return { id: String(event.data.turn), role: "update" };
+        if (event.type === "tool/result" && event.surfaceOp === "append") return { id: String(event.data.turn), role: "update" };
+        return null;
+      },
+      start: (_context, match) => ({ turn: match.event.data.turn, calls: new Map(), results: [] }),
+      update: (context, match) => {
+        const event = match.event;
+        if (event.type === "tool/call") {
+          if (!TURN_CARD_VIEWS[event.data.name]) return context.state;
+          const calls = new Map(context.state.calls);
+          calls.set(String(event.data.callId), { name: event.data.name, argsRaw: event.data.arguments, time: event.seq });
+          return { ...context.state, calls };
+        }
+        if (event.type !== "tool/result") return context.state;
+        const message = event.data.message;
+        const callId = String(message.source.callId);
+        const call = context.state.calls.get(callId);
+        if (!call || message.isError === true) return context.state;
+        const node = {
+          kind: "tool-result",
+          seq: event.seq,
+          time: event.time,
+          callId,
+          name: call.name,
+          call: { name: call.name, argsRaw: call.argsRaw },
+          callTime: call.time,
+          content: message.content,
+          isError: false,
+          meta: event.data.meta,
+          subCalls: [],
+        };
+        return { ...context.state, results: [...context.state.results, node] };
+      },
+      buildLocationData: (context, scope, previous) => {
+        if (scope !== "turn" || context.state === undefined) return null;
+        if (previous && previous.kind === "turn" && previous.turn === context.state.turn
+          && previous.key === TURN_CARDS_KEY && previous.value.results === context.state.results) return previous;
+        return { kind: "turn", turn: context.state.turn, key: TURN_CARDS_KEY, value: { results: context.state.results } };
+      },
+    };
+
+    function TurnCards(props) {
+      const data = props.turn && props.turn.data && typeof props.turn.data.get === "function"
+        ? props.turn.data.get(TURN_CARDS_KEY)
+        : undefined;
+      const bound = (props.turn && props.turn.end && props.turn.end.seq) ?? props.seq ?? Number.POSITIVE_INFINITY;
+      const results = data ? data.results.filter((node) => node.seq <= bound) : [];
+      if (!results.length) return null;
+      return h("div", { className: "sh-turn-cards" },
+        results.map((node) => h(TURN_CARD_VIEWS[node.name], { key: node.callId, block: node, t: props.t })),
+      );
+    }
+
+    function compactToolView(View) {
+      return function CompactToolView(props) {
+        const running = props?.phase === "preparing" || props?.phase === "start"
+          || (props?.phase !== "result" && !!props?.block && !("kind" in props.block));
+        if (running || props?.block?.isError) return h(View, props);
+        const payload = pickPayload(props);
+        const n = Array.isArray(payload?.items) ? payload.items.length : 0;
+        if (!n) return h(View, props);
+        const tr = typeof props.t === "function" ? props.t : lookup;
+        return h("div", { className: "sh-root sh-tool" }, h("div", { className: "sh-hint" }, tr("tail.moved", { n })));
+      };
+    }
+
+    const inject = ["slots"];
     // rc.6 list slots require `id`; rc.7+ keyed slots require `key`. Pass both.
     function registerSlot(slots, options, component) {
       const next = { ...options };
@@ -2818,7 +2514,6 @@ window.__ModuleLoader__.load({
     }
     function apply(ctx) {
       const slots = ctx.slots;
-      const sessions = ctx.sessions;
       if (!slots) return;
       ctx.inject(["locale"], (c) => {
         if (!c.locale || typeof c.locale.register !== "function") return;
@@ -2834,30 +2529,43 @@ window.__ModuleLoader__.load({
       slots.inject("tool.call.toolview", () => registerSlot(
         slots,
         { name: "tool.call.toolview", key: "skillhub_search", locale: "skillhub" },
-        SearchToolView,
+        compactToolView(SearchToolView),
       ));
       slots.inject("tool.call.toolview", () => registerSlot(
         slots,
         { name: "tool.call.toolview", key: "skillhub_list", locale: "skillhub" },
-        ListToolView,
+        compactToolView(ListToolView),
       ));
       slots.inject("tool.call.toolview", () => registerSlot(
         slots,
         { name: "tool.call.toolview", key: "skillhub_plugin_search", locale: "skillhub" },
-        PluginSearchToolView,
+        compactToolView(PluginSearchToolView),
       ));
       slots.inject("settings.plugin.item", () => registerSlot(
         slots,
         { name: "settings.plugin.item", key: "skillhub", locale: "skillhub" },
         ConfigCard,
       ));
-      slots.inject("sidebar.footer.action", () => registerSlot(
+      slots.inject("main", () => registerSlot(
         slots,
-        { name: "sidebar.footer.action", id: "skillhub-plaza", order: 8, label: () => lookup("plaza.title"), locale: "skillhub" },
-        function PlazaEntry(actionProps) {
-          return h(PlazaAction, { ...actionProps, sessions });
-        },
+        { name: "main", key: PLAZA_PANEL_ID, locale: "skillhub" },
+        SkillPlazaPage,
       ));
+      slots.inject("sidebar.panellist", () => registerSlot(
+        slots,
+        { name: "sidebar.panellist", id: PLAZA_PANEL_ID, order: 5, label: () => lookup("plaza.title"), locale: "skillhub" },
+        PlazaIcon,
+      ));
+      slots.inject("conversation.chat.turnTail", () => registerSlot(
+        slots,
+        { name: "conversation.chat.turnTail", id: "skillhub-cards", order: 30, locale: "skillhub" },
+        TurnCards,
+      ));
+      ctx.inject(["uiConversation"], (c) => {
+        const events = c.uiConversation && c.uiConversation.events;
+        if (!events || typeof events.register !== "function") return;
+        c.effect(() => events.register(skillhubTurnDefinition), "skillhub-turn-cards");
+      });
     }
 
     return { inject, apply };

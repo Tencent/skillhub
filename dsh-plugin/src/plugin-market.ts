@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fetchOpts } from './api.js'
-import { addDshPlugin, webProfileDir, type PluginRunner } from './dsh-cli.js'
+import { addDshPlugin, type PluginRunner } from './dsh-cli.js'
 import { fetchBytes, fetchJson, HttpError } from './http.js'
+import { currentProfileDir, isSafeProfileName, resolveRuntimeProfile } from './runtime-profile.js'
 import type { PluginConfig } from './types.js'
 
 export type PluginScope = 'verified' | 'all'
@@ -157,7 +158,7 @@ export function githubRepoFromSpec(spec: string): string | null {
   return matched[1].replace(/\.git$/i, '').toLowerCase()
 }
 
-export function readInstalledPlugins(profileDir: string = webProfileDir()): Record<string, string> {
+export function readInstalledPlugins(profileDir: string = currentProfileDir()): Record<string, string> {
   try {
     const raw = JSON.parse(readFileSync(join(profileDir, 'package.json'), 'utf8')) as { dependencies?: unknown }
     if (!raw.dependencies || typeof raw.dependencies !== 'object') return {}
@@ -236,8 +237,8 @@ export function patchEntryIds(yaml: string): string[] {
   return ids
 }
 
-/** 收集 web profile 已安装各包 cordis.patch.yml 声明的 loader id → 持有包名。 */
-export function collectInstalledPatchIds(profileDir: string = webProfileDir()): Map<string, string> {
+/** 收集当前 profile 已安装各包 cordis.patch.yml 声明的 loader id → 持有包名。 */
+export function collectInstalledPatchIds(profileDir: string = currentProfileDir()): Map<string, string> {
   const out = new Map<string, string>()
   for (const pkg of Object.keys(readInstalledPlugins(profileDir))) {
     try {
@@ -280,7 +281,7 @@ export async function findPatchIdConflict(
 ): Promise<{ id: string; holder: string } | null> {
   const incoming = await fetchPatchIdsFromSource(source, cfg, deps.fetchBytesImpl)
   if (!incoming.length) return null
-  const profileDir = deps.profileDir ?? webProfileDir()
+  const profileDir = deps.profileDir ?? currentProfileDir(cfg.profile)
   const installed = collectInstalledPatchIds(profileDir)
   const installedSpecs = readInstalledPlugins(profileDir)
   const sourceRepo = githubRepoFromSpec(source)
@@ -326,13 +327,14 @@ export function resolveInstallSource(
   if (/(?:^|\s)--force(?:\s|$)/.test(command) || /(?:^|\s)-f(?:\s|$)/.test(command)) {
     throw new Error('拒绝带 --force 的安装计划')
   }
-  const profile = String(plan.profile || 'web').trim() || 'web'
-  if (profile !== 'web') throw new Error('仅支持 web profile')
+  // The plan identifies a source. Only the local runtime/config selects where it is installed.
+  const profile = String(plan.profile || '').trim()
+  if (profile && !isSafeProfileName(profile)) throw new Error('安装计划 profile 名称无效')
   let source = String(plan.source || '').trim()
   if (!source) {
-    const matched = /^dsh plugin --profile web add (\S+)$/.exec(command.trim())
-    if (!matched) throw new Error('安装计划没有可用的 source')
-    source = matched[1]
+    const matched = /^dsh plugin --profile (?:"([^"]+)"|'([^']+)'|(\S+)) add (\S+)$/.exec(command.trim())
+    if (!matched || !isSafeProfileName(matched[1] ?? matched[2] ?? matched[3])) throw new Error('安装计划没有可用的 source')
+    source = matched[4]
   }
   const pin = GITHUB_PIN.exec(source)
   if (!pin) throw new Error('安装计划 source 不是 pinned github 规格')
@@ -383,11 +385,13 @@ export async function installMarketPlugin(
   const ref = parsePluginRef(plugin.owner, plugin.name)
   const plan = await fetchInstallPlan(cfg, ref.owner, ref.name, fetchImpl)
   const source = resolveInstallSource(plan, ref)
-  const conflict = await findPatchIdConflict(source, cfg, { fetchBytesImpl: deps.fetchBytes, profileDir: deps.profileDir })
+  const profile = resolveRuntimeProfile(cfg.profile)
+  const profileDir = deps.profileDir ?? profile.dir
+  const conflict = await findPatchIdConflict(source, cfg, { fetchBytesImpl: deps.fetchBytes, profileDir })
   if (conflict) {
-    throw new Error(`插件加载 id「${conflict.id}」与已安装的 ${conflict.holder} 冲突,继续安装会让 dsh web 无法启动,已拒绝。请先卸载 ${conflict.holder}。`)
+    throw new Error(`插件加载 id「${conflict.id}」与已安装的 ${conflict.holder} 冲突,继续安装会让 ${profile.name} profile 无法启动,已拒绝。请先卸载 ${conflict.holder}。`)
   }
-  const log = await addDshPlugin(source, deps.runDshPlugin ? { runDshPlugin: deps.runDshPlugin } : {})
+  const log = await addDshPlugin(source, { profile: profile.name, profileDir, runDshPlugin: deps.runDshPlugin })
   return {
     fullName: ref.fullName,
     source,
@@ -454,7 +458,7 @@ export async function searchMarketPlugins(
   cfg: PluginConfig,
   opts: { q?: unknown; category?: unknown; sort?: unknown; limit?: unknown; offset?: unknown } = {},
   fetchJsonImpl: typeof fetchJson = fetchJson,
-  installedMap: Record<string, string> = readInstalledPlugins(),
+  installedMap: Record<string, string> = readInstalledPlugins(currentProfileDir(cfg.profile)),
 ): Promise<PluginSearchResult> {
   const paging = pluginPaging(opts.offset, opts.limit, cfg.maxResults)
   const category = parsePluginCategory(opts.category)
@@ -484,7 +488,7 @@ export async function listPlugins(
   cfg: PluginConfig,
   query: PluginListQuery = {},
   fetchJsonImpl: typeof fetchJson = fetchJson,
-  installedMap: Record<string, string> = readInstalledPlugins(),
+  installedMap: Record<string, string> = readInstalledPlugins(currentProfileDir(cfg.profile)),
 ): Promise<PluginPage> {
   const url = buildPluginsUrl(cfg.apiBase, query)
   const body = await fetchJsonImpl<{ items?: unknown[]; total?: unknown; page?: unknown; pageSize?: unknown }>(

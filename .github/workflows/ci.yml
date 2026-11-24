@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dsh-plugin/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dsh-plugin/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+    working-directory: dsh-plugin
+
+jobs:
+  test:
+    name: Test (Node.js ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.17.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+          cache-dependency-path: dsh-plugin/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Coverage thresholds
+        if: matrix.node == 22
+        run: pnpm test:coverage
+
+  windows-cli:
+    name: Windows CLI (Node.js ${{ matrix.node }})
+    runs-on: windows-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.17.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+          cache-dependency-path: dsh-plugin/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Compile regression tests
+        run: pnpm exec tsc -p tsconfig.json
+
+      - name: Test native Windows CLI and profiles
+        run: node --test lib/tests/dsh-cli.test.js lib/tests/runtime-profile.test.js
+
+  pack:
+    name: Package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [test, windows-cli]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.17.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: dsh-plugin/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Ensure lib is not committed
+        run: |
+          tracked=$(git ls-files 'lib' 'lib/**')
+          if [[ -n $tracked ]]; then
+            echo "dsh-plugin/lib/ must not be committed:" >&2
+            echo "$tracked" >&2
+            exit 1
+          fi
+
+      - name: Build and syntax-check host
+        run: |
+          pnpm build
+          node --check lib/host.js
+          node --check lib/install.js
+          grep -q 'id: "skillhub-plugin"' lib/client.js
+          grep -q "name: 'skillhub-plugin'" cordis.patch.yml
+          node -e "if (require('./package.json').name !== 'skillhub-plugin') process.exit(1)"
+
+      - name: Verify package contents
+        run: bash scripts/check-pack.sh

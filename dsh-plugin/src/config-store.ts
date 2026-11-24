@@ -1,13 +1,11 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { dshHome, isSafeProfileName, resolveRuntimeProfile } from './runtime-profile.js'
 import type { PluginConfig, SortBy } from './types.js'
 
-const SORTS: SortBy[] = ['score', 'downloads', 'stars', 'installs', 'updated_at']
+export { dshHome } from './runtime-profile.js'
 
-export function dshHome(): string {
-  return process.env.DSH_HOME || join(homedir(), '.dsh')
-}
+const SORTS: SortBy[] = ['score', 'downloads', 'stars', 'installs', 'updated_at']
 
 export function defaultSkillsDir(): string {
   return join(dshHome(), 'skills')
@@ -22,7 +20,7 @@ export function sanitizeSortBy(raw: unknown, fallback: SortBy = 'score'): SortBy
   return SORTS.includes(value) ? value : fallback
 }
 
-export function publicConfig(cfg: PluginConfig): Omit<PluginConfig, 'userAgent'> {
+export function publicConfig(cfg: PluginConfig): Omit<PluginConfig, 'userAgent'> & { activeProfile: string } {
   return {
     apiBase: cfg.apiBase,
     webBase: cfg.webBase,
@@ -30,6 +28,8 @@ export function publicConfig(cfg: PluginConfig): Omit<PluginConfig, 'userAgent'>
     timeoutMs: cfg.timeoutMs,
     maxResults: cfg.maxResults,
     sortBy: cfg.sortBy,
+    profile: cfg.profile || '',
+    activeProfile: resolveRuntimeProfile(cfg.profile).name,
   }
 }
 
@@ -45,7 +45,8 @@ export function readOverlay(): Partial<PluginConfig> {
 export function writeOverlay(cfg: PluginConfig): void {
   const path = overlayPath()
   mkdirSync(dirname(path), { recursive: true })
-  writeFileSync(path, `${JSON.stringify(publicConfig(cfg), null, 2)}\n`)
+  const { activeProfile: _activeProfile, ...stored } = publicConfig(cfg)
+  writeFileSync(path, `${JSON.stringify(stored, null, 2)}\n`)
 }
 
 export function sanitizePatch(raw: Record<string, unknown>): Partial<PluginConfig> {
@@ -53,6 +54,10 @@ export function sanitizePatch(raw: Record<string, unknown>): Partial<PluginConfi
   if (typeof raw.apiBase === 'string' && /^https?:\/\//i.test(raw.apiBase.trim())) out.apiBase = raw.apiBase.trim().replace(/\/$/, '')
   if (typeof raw.webBase === 'string' && /^https?:\/\//i.test(raw.webBase.trim())) out.webBase = raw.webBase.trim().replace(/\/$/, '')
   if (typeof raw.skillsDir === 'string' && raw.skillsDir.trim()) out.skillsDir = raw.skillsDir.trim()
+  if (typeof raw.profile === 'string') {
+    const profile = raw.profile.trim()
+    if (!profile || isSafeProfileName(profile)) out.profile = profile
+  }
   if (typeof raw.userAgent === 'string' && raw.userAgent.trim()) out.userAgent = raw.userAgent.trim()
   const timeout = Number(raw.timeoutMs)
   if (Number.isFinite(timeout) && timeout >= 3000) out.timeoutMs = Math.min(timeout, 120000)
@@ -66,6 +71,7 @@ export function assignConfig(live: PluginConfig, patch: Partial<PluginConfig>): 
   if (patch.apiBase) live.apiBase = patch.apiBase
   if (patch.webBase) live.webBase = patch.webBase
   if (patch.skillsDir) live.skillsDir = patch.skillsDir
+  if (patch.profile !== undefined) live.profile = patch.profile
   if (patch.userAgent) live.userAgent = patch.userAgent
   if (patch.timeoutMs != null) live.timeoutMs = patch.timeoutMs
   if (patch.maxResults != null) live.maxResults = patch.maxResults
@@ -78,6 +84,7 @@ export function withDefaults(config: Partial<PluginConfig>): PluginConfig {
     apiBase: config.apiBase || 'https://api.skillhub.cn',
     webBase: config.webBase || 'https://skillhub.cn',
     skillsDir: config.skillsDir || defaultSkillsDir(),
+    profile: config.profile?.trim() || '',
     timeoutMs: config.timeoutMs || 20000,
     userAgent: config.userAgent || 'Mozilla/5.0 (compatible; skillhub/0.1)',
     maxResults: config.maxResults || 12,

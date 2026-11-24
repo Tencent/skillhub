@@ -9,6 +9,8 @@ export interface PluginConfig {
   apiBase: string
   webBase: string
   skillsDir: string
+  /** Empty or omitted selects the running DSH profile. */
+  profile?: string
   timeoutMs: number
   userAgent: string
   maxResults: number
